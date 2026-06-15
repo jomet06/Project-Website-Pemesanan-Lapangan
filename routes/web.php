@@ -1,14 +1,5 @@
 <?php
 
-use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
-use App\Http\Controllers\Admin\FieldController as AdminField;
-use App\Http\Controllers\Admin\ScheduleController as AdminSchedule;
-use App\Http\Controllers\Admin\BookingController as AdminBooking;
-use App\Http\Controllers\Admin\UserController as AdminUser;
-use App\Http\Controllers\User\DashboardController as UserDashboard;
-use App\Http\Controllers\User\BookingController as UserBooking;
-use App\Http\Controllers\GuestController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AuthController;
