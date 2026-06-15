@@ -10,31 +10,30 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        // Buat Akun Admin
+        // Admin
         User::create([
-            'name_users' => 'Admin Lapangan',
-            'username'   => 'admin_sport',
-            'email'      => 'admin@gmail.com',
-            'password'   => Hash::make('password123'),
-            'role'       => 'admin',
+            'username' => 'Admin ActiveCourt',
+            'email' => 'admin@activecourt.com',
+            'password' => Hash::make('password'),
+            'role' => 'admin',
+            'created_at' => now()->subMonth(),
         ]);
 
-        // Buat Akun User Contoh 1
-        User::create([
-            'name_users' => 'Aldo Kurniawan',
-            'username'   => 'aldo_kt',
-            'email'      => 'user@gmail.com',
-            'password'   => Hash::make('password123'),
-            'role'       => 'user',
-        ]);
+        // Users
+        $users = [
+            ['username' => 'Raka Pratama', 'email' => 'raka@example.com'],
+            ['username' => 'Nadia Putri', 'email' => 'nadia@example.com'],
+            ['username' => 'Dimas Arya', 'email' => 'dimas@example.com'],
+        ];
 
-        // Buat Akun User Contoh 2
-        User::create([
-            'name_users' => 'Vinsens Sandri',
-            'username'   => 'vinsens_s',
-            'email'      => 'vinsens@gmail.com',
-            'password'   => Hash::make('password123'),
-            'role'       => 'user',
-        ]);
+        foreach ($users as $index => $user) {
+            User::create([
+                'username' => $user['username'],
+                'email' => $user['email'],
+                'password' => Hash::make('password'),
+                'role' => 'user',
+                'created_at' => now()->subDays(18 - ($index * 3)),
+            ]);
+        }
     }
 }

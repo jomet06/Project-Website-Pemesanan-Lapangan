@@ -11,19 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
-         Schema::create('payments', function (Blueprint $table) {
-            $table->id('id_payments');
-            $table->unsignedBigInteger('booking_id');
+        Schema::create('payments', function (Blueprint $table) {
+            $table->id('id_payments'); // Primary Key
+
+            // Foreign key merujuk ke id_bookings
+            $table->foreignId('booking_id')
+                ->constrained('bookings', 'id_bookings')
+                ->onDelete('cascade');
+
             $table->string('midtrans_order_id')->unique();
             $table->string('midtrans_transaction_id')->nullable();
-            $table->decimal('amount', 10, 2);
-            $table->string('payment_method')->nullable();
-            $table->enum('status_payments', ['pending', 'success', 'failed', 'expired', 'cancel'])->default('pending');
+            $table->integer('amount');
+            $table->string('payment_method')->nullable(); // Gopay, ShopeePay, Bank Transfer, dll.
+            $table->string('status_payments'); // settlement, pending, deny, expire
+            $table->string('snap_token')->nullable(); // Token untuk menampilkan pop-up Midtrans Snap
             $table->timestamp('paid_at')->nullable();
-            $table->text('snap_token')->nullable();
-            $table->timestamps();
- 
-            $table->foreign('booking_id')->references('id_bookings')->on('bookings')->onDelete('cascade');
+            $table->timestamps(); // timestamp_payments
         });
     }
 

@@ -1,129 +1,170 @@
 @extends('layouts.app')
 
-@section('title', 'Beranda - SportBooking')
+@section('title', 'ActiveCourt - Secure Your Game')
 
 @section('content')
-    <!-- Hero Section -->
-    <section class="relative bg-emerald-700 text-white overflow-hidden">
-        <div class="absolute inset-0">
-            <!-- Background pattern/image overlay -->
-            <img src="https://images.unsplash.com/photo-1518605368461-1e1252220a22?auto=format&fit=crop&q=80&w=2000" alt="Background" class="w-full h-full object-cover opacity-20" />
-            <div class="absolute inset-0 bg-gradient-to-r from-emerald-800 to-transparent"></div>
+<!-- Hero Section (Minimum 1 Screen) -->
+<section class="relative bg-primary-950 text-white min-h-screen flex items-center justify-center overflow-hidden">
+    <div class="absolute inset-0">
+        <img src="{{ asset('images/hero-bg.jpg') }}" 
+             alt="Background" 
+             class="w-full h-full object-cover opacity-60" />
+             
+        <div class="absolute inset-0 bg-black/60"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-primary-950 via-transparent to-primary-950/40"></div>
+        
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-accent-500/20 rounded-full filter blur-[100px] opacity-60 animate-pulse"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/20 rounded-full filter blur-[100px] opacity-60 animate-pulse" style="animation-delay: 2s;"></div>
+    </div>
+    
+    <div class="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center z-10">
+        <span class="inline-block py-1.5 px-4 rounded-full bg-white/10 border border-white/20 backdrop-blur-md text-sm font-semibold tracking-wider text-accent-300 mb-6 uppercase">
+            Premium Sports Facilities
+        </span>
+        <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-tight text-transparent bg-clip-text bg-gradient-to-br from-white via-slate-200 to-slate-500 drop-shadow-sm">
+            Secure Your Game.<br><span class="text-white">Own The Court.</span>
+        </h1>
+        <p class="text-lg md:text-xl text-slate-300 mb-12 max-w-3xl mx-auto font-light leading-relaxed">
+            The professional standard for finding and booking premium sports facilities. Instantly secure futsal, basketball, and badminton courts with real-time availability.
+        </p>
+
+        <form action="{{ route('fields.index') }}" method="GET" class="bg-white/10 backdrop-blur-xl border border-white/20 p-2.5 rounded-2xl flex flex-col md:flex-row gap-3 max-w-4xl mx-auto shadow-2xl transition-all duration-300 hover:bg-white/15">
+            <div class="flex-1 relative flex items-center bg-white rounded-xl">
+                <i class="fas fa-map-marker-alt text-slate-400 absolute left-5"></i>
+                <input type="text" name="location" placeholder="Location or Facility Name" class="w-full pl-12 pr-4 py-4 bg-transparent border-none text-slate-800 font-medium focus:ring-0 placeholder-slate-400 rounded-xl outline-none">
+            </div>
+            <div class="flex-1 relative flex items-center bg-white rounded-xl">
+                <i class="far fa-futbol text-slate-400 absolute left-5"></i>
+                <select name="sports" class="w-full pl-12 pr-4 py-4 bg-transparent border-none text-slate-600 font-medium focus:ring-0 appearance-none rounded-xl cursor-pointer outline-none">
+                    <option value="">Select Sport</option>
+                    <option value="Futsal">Futsal</option>
+                    <option value="Badminton">Badminton</option>
+                    <option value="Basketball">Basketball</option>
+                </select>
+                <i class="fas fa-chevron-down text-slate-400 absolute right-5 text-sm pointer-events-none"></i>
+            </div>
+            <button type="submit" class="bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white font-bold px-10 py-4 rounded-xl transition shadow-lg hover:shadow-accent-500/25 flex items-center justify-center gap-2 whitespace-nowrap text-lg">
+                <i class="fas fa-search"></i> Book Now
+            </button>
+        </form>
+    </div>
+</section>
+
+<!-- Choose Arena Section (Minimum 1 Screen) -->
+<section class="min-h-screen flex flex-col justify-center py-20 bg-slate-50 relative overflow-hidden">
+    <!-- Decorative background elements -->
+    <div class="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-primary-100 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
+    <div class="absolute bottom-0 left-0 -mb-20 -ml-20 w-96 h-96 bg-accent-100 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
+
+    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div class="text-center mb-16">
+            <h2 class="text-sm text-accent-600 font-bold tracking-[0.2em] uppercase mb-3">Explore Facilities</h2>
+            <h3 class="text-4xl md:text-5xl font-extrabold text-slate-900">Choose Your Arena</h3>
+            <div class="mt-6 w-24 h-1.5 bg-accent-500 mx-auto rounded-full"></div>
         </div>
         
-        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
-            <div class="max-w-2xl">
-                <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
-                    Booking Lapangan Olahraga Jadi Lebih Mudah
-                </h1>
-                <p class="text-lg md:text-xl text-emerald-100 mb-8">
-                    Temukan dan pesan lapangan futsal, basket, atau badminton favoritmu dalam hitungan menit. Cek jadwal real-time dan bayar dengan aman.
-                </p>
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <a href="#" class="bg-white text-emerald-700 hover:bg-emerald-50 px-8 py-3 rounded-lg font-bold text-center shadow-lg transition">
-                        Cari Lapangan
-                    </a>
-                    <a href="#" class="bg-emerald-600 border border-emerald-500 hover:bg-emerald-500 text-white px-8 py-3 rounded-lg font-bold text-center transition">
-                        Cara Pesan
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Keunggulan (Features) Section -->
-    <section class="py-16 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold text-slate-800">Kenapa Memilih Kami?</h2>
-                <p class="mt-4 text-slate-600">Kami memberikan pengalaman terbaik untuk aktivitas olahraga Anda.</p>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <!-- Feature 1 -->
-                <div class="text-center p-6 border border-slate-100 rounded-2xl shadow-sm hover:shadow-md transition">
-                    <div class="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-800 mb-2">Jadwal Real-Time</h3>
-                    <p class="text-slate-600">Lihat ketersediaan lapangan secara langsung. Tidak ada lagi miskomunikasi atau double-booking.</p>
-                </div>
-                <!-- Feature 2 -->
-                <div class="text-center p-6 border border-slate-100 rounded-2xl shadow-sm hover:shadow-md transition">
-                    <div class="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-800 mb-2">Pembayaran Mudah</h3>
-                    <p class="text-slate-600">Integrasi dengan Midtrans. Bayar via transfer bank, e-wallet, atau kartu kredit dengan aman.</p>
-                </div>
-                <!-- Feature 3 -->
-                <div class="text-center p-6 border border-slate-100 rounded-2xl shadow-sm hover:shadow-md transition">
-                    <div class="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-800 mb-2">Batal Booking H-3</h3>
-                    <p class="text-slate-600">Ada halangan mendadak? Batalkan pesananmu maksimal 3 hari sebelum jadwal main.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Lapangan Populer Section -->
-    <section class="py-16 bg-slate-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-end mb-8">
-                <div>
-                    <h2 class="text-3xl font-bold text-slate-800">Lapangan Tersedia</h2>
-                    <p class="mt-2 text-slate-600">Pilih lapangan sesuai dengan olahraga favoritmu.</p>
-                </div>
-                <a href="#" class="hidden sm:inline-flex text-emerald-600 font-semibold hover:text-emerald-700">Lihat Semua &rarr;</a>
-            </div>
-
-            <!-- Grid Lapangan -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Large Card -->
+            <a href="{{ route('fields.index', ['sports' => 'Futsal']) }}" class="group relative rounded-3xl overflow-hidden md:col-span-2 aspect-[2/1] lg:aspect-auto lg:h-[500px] shadow-lg hover:shadow-2xl transition-all duration-500 block">
+                <img src="https://images.unsplash.com/photo-1524015368236-bbf6f72545b6?auto=format&fit=crop&q=80&w=1000" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-700 ease-in-out">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500"></div>
                 
-                @forelse($fields as $field)
-                    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg transition group">
-                        <div class="relative h-48 bg-slate-200 overflow-hidden">
-                            <!-- Jika belum ada gambar asli, pakai dummy Unsplash -->
-                            <img src="https://images.unsplash.com/photo-1544919982-b61976f0ba43?auto=format&fit=crop&q=80&w=800" alt="{{ $field->name_fields }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                            <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-emerald-700">
-                                {{ $field->type_fields }}
-                            </div>
-                        </div>
-                        <div class="p-6">
-                            <h3 class="text-xl font-bold text-slate-800 mb-2">{{ $field->name_fields }}</h3>
-                            <p class="text-slate-500 text-sm mb-4 line-clamp-2">{{ $field->description }}</p>
-                            
-                            <div class="flex items-center justify-between mt-6 pt-4 border-t border-slate-100">
-                                <div>
-                                    <span class="text-xs text-slate-500 block">Mulai dari</span>
-                                    <span class="text-lg font-extrabold text-emerald-600">Rp {{ number_format($field->price_per_hour, 0, ',', '.') }}<span class="text-sm font-normal text-slate-500">/jam</span></span>
-                                </div>
-                                <a href="#" class="bg-slate-100 hover:bg-emerald-600 hover:text-white text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold transition">
-                                    Booking
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                @empty
-                    <div class="col-span-3 text-center py-12">
-                        <p class="text-slate-500">Belum ada data lapangan tersedia saat ini.</p>
-                    </div>
-                @endforelse
+                <div class="absolute top-6 right-6 bg-white/20 backdrop-blur-md rounded-full px-4 py-2 border border-white/30">
+                    <span class="text-white font-semibold text-sm flex items-center gap-2"><i class="fas fa-fire text-accent-400"></i> Popular</span>
+                </div>
 
-            </div>
+                <div class="absolute bottom-8 left-8 right-8 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                    <div class="w-12 h-12 bg-accent-500 text-white rounded-2xl flex items-center justify-center text-xl mb-4 shadow-lg group-hover:-translate-y-2 transition-transform duration-500">
+                        <i class="far fa-futbol"></i>
+                    </div>
+                    <h3 class="text-3xl font-bold text-white mb-2">Futsal Pitches</h3>
+                    <p class="text-slate-300 text-base mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">Experience pro-level turf and lighting. Perfect for 5v5 matches and tournaments.</p>
+                    <span class="inline-flex items-center text-accent-400 font-bold text-sm group-hover:text-accent-300">
+                        Explore 120+ Pitches <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-2 transition-transform"></i>
+                    </span>
+                </div>
+            </a>
             
-            <div class="mt-8 text-center sm:hidden">
-                <a href="#" class="inline-flex text-emerald-600 font-semibold hover:text-emerald-700">Lihat Semua Lapangan &rarr;</a>
+            <div class="flex flex-col gap-8 lg:h-[500px]">
+                <!-- Small Card 1 -->
+                <a href="{{ route('fields.index', ['sports' => 'Basketball']) }}" class="group relative rounded-3xl overflow-hidden flex-1 shadow-lg hover:shadow-2xl transition-all duration-500 block">
+                    <img src="https://images.unsplash.com/photo-1504450758481-7338eba7524a?auto=format&fit=crop&q=80&w=800" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-700 ease-in-out">
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div class="absolute bottom-6 left-6 right-6 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
+                        <h3 class="text-2xl font-bold text-white mb-1">Basketball</h3>
+                        <p class="text-slate-300 text-sm mb-3">Premium hardwood courts.</p>
+                        <span class="inline-flex items-center text-accent-400 font-bold text-xs">
+                            45 Courts <i class="fas fa-arrow-right ml-1 transform group-hover:translate-x-1 transition-transform"></i>
+                        </span>
+                    </div>
+                </a>
+                <!-- Small Card 2 -->
+                <a href="{{ route('fields.index', ['sports' => 'Badminton']) }}" class="group relative rounded-3xl overflow-hidden flex-1 shadow-lg hover:shadow-2xl transition-all duration-500 block">
+                    <img src="https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&q=80&w=800" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-700 ease-in-out">
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div class="absolute bottom-6 left-6 right-6 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
+                        <h3 class="text-2xl font-bold text-white mb-1">Badminton</h3>
+                        <p class="text-slate-300 text-sm mb-3">Professional BWF standard mats.</p>
+                        <span class="inline-flex items-center text-accent-400 font-bold text-xs">
+                            80 Courts <i class="fas fa-arrow-right ml-1 transform group-hover:translate-x-1 transition-transform"></i>
+                        </span>
+                    </div>
+                </a>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Call to Action Section -->
-    <section class="py-20 bg-emerald-600 text-white text-center px-4">
-        <h2 class="text-3xl font-bold mb-4">Siap untuk Bertanding?</h2>
-        <p class="mb-8 text-emerald-100 max-w-xl mx-auto">Jangan sampai kehabisan slot. Buat akun sekarang dan nikmati kemudahan booking lapangan hanya dari smartphone Anda.</p>
-        <a href="#" class="bg-white text-emerald-700 hover:bg-emerald-50 px-8 py-3 rounded-lg font-bold text-lg inline-block shadow-lg transition">Daftar Sekarang - Gratis</a>
-    </section>
+<!-- Why Choose Us Section (Minimum 1 Screen) -->
+<section class="min-h-screen flex flex-col justify-center py-20 bg-white relative overflow-hidden">
+    <!-- Decorative elements -->
+    <div class="absolute top-1/2 left-0 w-72 h-72 bg-accent-50 rounded-full blur-3xl opacity-60 -translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
+    <div class="absolute top-1/2 right-0 w-72 h-72 bg-primary-50 rounded-full blur-3xl opacity-60 -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+
+    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div class="text-center mb-16">
+            <h2 class="text-sm text-accent-600 font-bold tracking-[0.2em] uppercase mb-3">Our Excellence</h2>
+            <h3 class="text-4xl md:text-5xl font-extrabold text-slate-900">Why Choose ActiveCourt</h3>
+            <div class="mt-6 w-24 h-1.5 bg-accent-500 mx-auto rounded-full"></div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <!-- Feature 1 -->
+            <div class="bg-slate-50 rounded-3xl p-8 border border-slate-100 hover:border-accent-200 hover:shadow-xl transition-all duration-300 group text-center">
+                <div class="w-16 h-16 mx-auto bg-white text-accent-500 rounded-2xl flex items-center justify-center text-2xl mb-6 shadow-sm group-hover:scale-110 group-hover:bg-accent-500 group-hover:text-white transition-all duration-300">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h4 class="text-xl font-bold text-slate-800 mb-3">Real-time Booking</h4>
+                <p class="text-slate-600 text-sm leading-relaxed">No more waiting. Check availability and secure your court instantly with our live scheduling system.</p>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="bg-slate-50 rounded-3xl p-8 border border-slate-100 hover:border-primary-200 hover:shadow-xl transition-all duration-300 group text-center">
+                <div class="w-16 h-16 mx-auto bg-white text-primary-500 rounded-2xl flex items-center justify-center text-2xl mb-6 shadow-sm group-hover:scale-110 group-hover:bg-primary-500 group-hover:text-white transition-all duration-300">
+                    <i class="fas fa-medal"></i>
+                </div>
+                <h4 class="text-xl font-bold text-slate-800 mb-3">Premium Quality</h4>
+                <p class="text-slate-600 text-sm leading-relaxed">We only partner with top-tier facilities ensuring professional-grade surfaces and excellent lighting.</p>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="bg-slate-50 rounded-3xl p-8 border border-slate-100 hover:border-green-200 hover:shadow-xl transition-all duration-300 group text-center">
+                <div class="w-16 h-16 mx-auto bg-white text-green-500 rounded-2xl flex items-center justify-center text-2xl mb-6 shadow-sm group-hover:scale-110 group-hover:bg-green-500 group-hover:text-white transition-all duration-300">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h4 class="text-xl font-bold text-slate-800 mb-3">Secure Payments</h4>
+                <p class="text-slate-600 text-sm leading-relaxed">Your transactions are protected with industry-standard encryption for a safe booking experience.</p>
+            </div>
+
+            <!-- Feature 4 -->
+            <div class="bg-slate-50 rounded-3xl p-8 border border-slate-100 hover:border-purple-200 hover:shadow-xl transition-all duration-300 group text-center">
+                <div class="w-16 h-16 mx-auto bg-white text-purple-500 rounded-2xl flex items-center justify-center text-2xl mb-6 shadow-sm group-hover:scale-110 group-hover:bg-purple-500 group-hover:text-white transition-all duration-300">
+                    <i class="fas fa-headset"></i>
+                </div>
+                <h4 class="text-xl font-bold text-slate-800 mb-3">24/7 Support</h4>
+                <p class="text-slate-600 text-sm leading-relaxed">Our dedicated customer service team is always ready to help you with any questions or issues.</p>
+            </div>
+        </div>
+    </div>
+</section>
 @endsection

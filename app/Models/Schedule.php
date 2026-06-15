@@ -9,8 +9,10 @@ class Schedule extends Model
 {
     use HasFactory;
 
+    protected $table = 'schedules';
     protected $primaryKey = 'id_schedules';
 
+    // Kolom yang diizinkan untuk pengisian massal
     protected $fillable = [
         'field_id',
         'date',
@@ -19,11 +21,6 @@ class Schedule extends Model
         'status_schedules',
     ];
 
-    protected $casts = [
-        'date' => 'date',
-    ];
-
-    // Relationships
     public function field()
     {
         return $this->belongsTo(Field::class, 'field_id', 'id_fields');
@@ -32,19 +29,5 @@ class Schedule extends Model
     public function booking()
     {
         return $this->hasOne(Booking::class, 'schedule_id', 'id_schedules');
-    }
-
-    // Scopes
-    public function scopeAvailable($query)
-    {
-        return $query->where('status_schedules', 'available');
-    }
-
-    // Helpers
-    public function getDurationHoursAttribute(): float
-    {
-        $start = \Carbon\Carbon::parse($this->start_time);
-        $end   = \Carbon\Carbon::parse($this->end_time);
-        return $end->diffInMinutes($start) / 60;
     }
 }

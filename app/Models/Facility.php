@@ -9,15 +9,18 @@ class Facility extends Model
 {
     use HasFactory;
 
+    protected $table = 'facilities';
     protected $primaryKey = 'id_facilities';
 
+    // Kolom yang diizinkan untuk pengisian massal
     protected $fillable = [
+        'field_id',
         'name_facilities',
         'icon',
     ];
 
-    public function fields()
+    public function field()
     {
-        return $this->belongsToMany(Field::class, 'field_facility', 'facility_id', 'field_id');
+        return $this->belongsTo(Field::class, 'field_id', 'id_fields');
     }
 }

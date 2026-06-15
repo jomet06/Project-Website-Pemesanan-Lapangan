@@ -9,37 +9,32 @@ class Field extends Model
 {
     use HasFactory;
 
+    protected $table = 'fields';
     protected $primaryKey = 'id_fields';
 
     protected $fillable = [
         'name_fields',
         'type_fields',
+        'address',
         'description',
         'price_per_hour',
         'capacity',
         'image',
-        'is_active',
+        'sub_courts',
     ];
 
+    // Beri tahu Laravel bahwa kolom ini adalah JSON/Array
     protected $casts = [
-        'is_active' => 'boolean',
-        'price_per_hour' => 'decimal:2',
+        'sub_courts' => 'array',
     ];
-
-    // Relationships
-    public function schedules()
-    {
-        return $this->hasMany(Schedule::class, 'field_id', 'id_fields');
-    }
 
     public function facilities()
     {
-        return $this->belongsToMany(Facility::class, 'field_facility', 'field_id', 'facility_id');
+        return $this->hasMany(Facility::class, 'field_id', 'id_fields');
     }
 
-    // Scopes
-    public function scopeActive($query)
+    public function schedules()
     {
-        return $query->where('is_active', true);
+        return $this->hasMany(Schedule::class, 'field_id', 'id_fields');
     }
 }

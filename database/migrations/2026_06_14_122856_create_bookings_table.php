@@ -13,18 +13,15 @@ return new class extends Migration
     {
         Schema::create('bookings', function (Blueprint $table) {
             $table->id('id_bookings');
-            $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('schedule_id');
-            $table->string('booking_code')->unique();
-            $table->decimal('total_price', 10, 2);
-            $table->enum('status_bookings', ['pending', 'confirmed', 'cancelled', 'completed'])->default('pending');
+            $table->foreignId('user_id')->constrained('users', 'id_users')->onDelete('cascade');
+            $table->foreignId('schedule_id')->constrained('schedules', 'id_schedules')->onDelete('cascade');
+            $table->string('booking_code')->unique(); // [cite: 30]
+            $table->integer('total_price'); // [cite: 31]
+            $table->enum('status_bookings', ['Pending', 'Paid', 'Cancelled']); // [cite: 32]
+            $table->date('play_date'); // [cite: 34]
             $table->timestamp('cancelled_at')->nullable();
             $table->string('cancel_reason')->nullable();
-            $table->date('play_date');
-            $table->timestamps();
- 
-            $table->foreign('user_id')->references('id_users')->on('users')->onDelete('cascade');
-            $table->foreign('schedule_id')->references('id_schedules')->on('schedules')->onDelete('cascade');
+            $table->timestamps(); // timestamp_bookings [cite: 35]
         });
     }
 

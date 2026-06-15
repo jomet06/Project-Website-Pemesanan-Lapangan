@@ -12,14 +12,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('fields', function (Blueprint $table) {
-            $table->id('id_fields');
+            $table->id('id_fields'); // Primary Key 
             $table->string('name_fields');
-            $table->string('type_fields')->nullable();
-            $table->text('description');
-            $table->decimal('price_per_hour', 10, 2);
+            $table->string('type_fields'); // Futsal, Badminton, Basketball, dll.
+            
+            // Kolom baru untuk alamat spesifik
+            $table->string('address'); 
+            
+            $table->text('description'); // Kini murni hanya untuk penjelasan fasilitas/lapangan
+            $table->integer('price_per_hour');
             $table->integer('capacity');
-            $table->string('image')->nullable();
-            $table->boolean('is_active')->default(true);
+            $table->string('image')->nullable(); // Ditambah nullable agar tidak error saat seeder kosong
+            $table->json('sub_courts'); 
+            
             $table->timestamps();
         });
     }

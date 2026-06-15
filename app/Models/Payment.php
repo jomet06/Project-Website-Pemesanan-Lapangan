@@ -9,8 +9,10 @@ class Payment extends Model
 {
     use HasFactory;
 
+    protected $table = 'payments';
     protected $primaryKey = 'id_payments';
 
+    // Kolom yang diizinkan untuk pengisian massal
     protected $fillable = [
         'booking_id',
         'midtrans_order_id',
@@ -18,13 +20,8 @@ class Payment extends Model
         'amount',
         'payment_method',
         'status_payments',
-        'paid_at',
         'snap_token',
-    ];
-
-    protected $casts = [
-        'paid_at' => 'datetime',
-        'amount'  => 'decimal:2',
+        'paid_at',
     ];
 
     public function booking()
