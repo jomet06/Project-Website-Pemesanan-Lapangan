@@ -56,6 +56,33 @@
     </div>
 </div>
 
+<!-- Financial Summary -->
+<div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6">
+    <div class="flex items-center justify-between mb-4">
+        <div>
+            <h3 class="font-bold text-slate-800">Ringkasan Keuangan</h3>
+            <p class="text-xs text-slate-500 font-medium">Data transaksi dan pendapatan terkini</p>
+        </div>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-green-50 rounded-lg p-4 border border-green-100">
+            <span class="text-xs font-bold text-green-600 uppercase tracking-wider">Total Pendapatan</span>
+            <p class="text-2xl font-extrabold text-green-700 mt-1">Rp {{ number_format($totalRevenue ?? 0, 0, ',', '.') }}</p>
+            <p class="text-xs text-green-500 mt-1">Semua waktu</p>
+        </div>
+        <div class="bg-accent-50 rounded-lg p-4 border border-accent-100">
+            <span class="text-xs font-bold text-accent-600 uppercase tracking-wider">Pendapatan Hari Ini</span>
+            <p class="text-2xl font-extrabold text-accent-700 mt-1">Rp {{ number_format($todayRevenue ?? 0, 0, ',', '.') }}</p>
+            <p class="text-xs text-accent-500 mt-1">{{ $todayBookings ?? 0 }} booking hari ini</p>
+        </div>
+        <div class="bg-blue-50 rounded-lg p-4 border border-blue-100">
+            <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Booking Aktif</span>
+            <p class="text-2xl font-extrabold text-blue-700 mt-1">{{ $activeBookings ?? 0 }}</p>
+            <p class="text-xs text-blue-500 mt-1">{{ $pendingBookings ?? 0 }} pending</p>
+        </div>
+    </div>
+</div>
+
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- Recent Bookings -->
     <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm">

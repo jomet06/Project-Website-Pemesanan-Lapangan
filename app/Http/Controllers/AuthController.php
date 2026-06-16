@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use Laravel\Socialite\Facades\Socialite;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -40,14 +42,31 @@ class AuthController extends Controller
 
     public function googleAuth()
     {
-        // Prototype: Langsung login pakai user pertama untuk simulasi OAuth
-        $user = User::query()->first();
-        if ($user) {
-            Auth::login($user);
-            return redirect()->route('home')->with('success', 'Berhasil login menggunakan akun Google.');
-        }
-        
-        return redirect()->route('login')->with('error', 'Sistem belum siap. Jalankan seeder database terlebih dahulu.');
+        return Socialite::driver('google')->redirect();
+    }
+
+    public function googleCallback()
+    {
+        $googleUser = Socialite::driver('google')
+            ->stateless()
+            ->user();
+
+        $user = User::firstOrCreate(
+            [
+                'email' => $googleUser->email
+            ],
+            [
+                'username' => explode('@', $googleUser->email)[0],
+                'name_users' => $googleUser->name,
+                'role' => 'user',
+                'password' => bcrypt(Str::random(16))
+            ]
+        );
+
+        Auth::login($user);
+
+        return redirect()->route('home')
+            ->with('success', 'Login Google berhasil');
     }
 
     public function logout(Request $request)

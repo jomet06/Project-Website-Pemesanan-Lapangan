@@ -16,12 +16,18 @@ class Booking extends Model
     protected $fillable = [
         'user_id',
         'schedule_id',
+        'schedule_ids',
+        'subcourt_name',
         'booking_code',
         'total_price',
         'status_bookings',
         'play_date',
         'cancelled_at',
         'cancel_reason',
+    ];
+
+    protected $casts = [
+        'schedule_ids' => 'array',
     ];
 
     public function user()
@@ -32,6 +38,16 @@ class Booking extends Model
     public function schedule()
     {
         return $this->belongsTo(Schedule::class, 'schedule_id', 'id_schedules');
+    }
+
+    public function getSchedulesList()
+    {
+        if ($this->schedule_ids && is_array($this->schedule_ids)) {
+            return Schedule::whereIn('id_schedules', $this->schedule_ids)
+                ->orderBy('start_time')
+                ->get();
+        }
+        return collect([$this->schedule])->filter();
     }
 
     public function payment()

@@ -97,6 +97,11 @@
                     <i class="fas fa-users w-5 text-center"></i>
                     User Management
                 </a>
+                <a href="{{ route('admin.schedules') }}" 
+                   class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition {{ request()->routeIs('admin.schedules*') ? 'bg-accent-500 text-white shadow-md' : 'text-primary-200 hover:bg-primary-700 hover:text-white' }}">
+                    <i class="fas fa-clock w-5 text-center"></i>
+                    Schedule
+                </a>
                 <a href="{{ route('admin.bookings') }}" 
                    class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition {{ request()->routeIs('admin.bookings*') ? 'bg-accent-500 text-white shadow-md' : 'text-primary-200 hover:bg-primary-700 hover:text-white' }}">
                     <i class="fas fa-calendar-check w-5 text-center"></i>

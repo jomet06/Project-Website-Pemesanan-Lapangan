@@ -26,6 +26,12 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    // Accessor for backward compatibility with views using name_users
+    public function getNameUsersAttribute()
+    {
+        return $this->username;
+    }
+
     public function bookings()
     {
         return $this->hasMany(Booking::class, 'user_id', 'id_users');

@@ -4,6 +4,22 @@
 @section('page-title', 'Bookings Management')
 
 @section('content')
+@if(session('success'))
+<div class="bg-green-100 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-4 flex items-center gap-2">
+    <i class="fas fa-check-circle"></i> {{ session('success') }}
+</div>
+@endif
+@if(session('error'))
+<div class="bg-red-100 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 flex items-center gap-2">
+    <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
+</div>
+@endif
+@if(session('info'))
+<div class="bg-blue-100 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg mb-4 flex items-center gap-2">
+    <i class="fas fa-info-circle"></i> {{ session('info') }}
+</div>
+@endif
+
 <!-- Booking Filters -->
 <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6">
     <div class="flex flex-wrap items-center gap-3">
@@ -70,6 +86,8 @@
                             <span class="text-xs font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded-full">Settlement</span>
                         @elseif($booking->payment && $booking->payment->status_payments === 'pending')
                             <span class="text-xs font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">Pending</span>
+                        @elseif($booking->payment && $booking->payment->status_payments === 'failed')
+                            <span class="text-xs font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded-full">Failed</span>
                         @else
                             <span class="text-xs text-slate-400">-</span>
                         @endif
@@ -85,9 +103,28 @@
                     </td>
                     <td class="py-4 px-6">
                         <div class="flex items-center justify-center gap-2">
-                            <button class="w-8 h-8 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition flex items-center justify-center" title="Detail">
+                            <a href="{{ route('admin.bookings.detail', $booking->id_bookings) }}" class="w-8 h-8 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition flex items-center justify-center" title="Detail">
                                 <i class="fas fa-eye text-xs"></i>
-                            </button>
+                            </a>
+                            @if($booking->status_bookings === 'Paid')
+                            <a href="{{ route('admin.bookings.invoice', $booking->id_bookings) }}" target="_blank" class="w-8 h-8 bg-primary-50 hover:bg-primary-100 text-primary-600 rounded-lg transition flex items-center justify-center" title="Invoice">
+                                <i class="fas fa-file-invoice text-xs"></i>
+                            </a>
+                            @endif
+                            @if($booking->status_bookings === 'Pending')
+                            <form action="{{ route('admin.bookings.forcePaid', $booking->id_bookings) }}" method="POST" class="inline" onsubmit="return confirm('Force Paid booking {{ $booking->booking_code }}?')">
+                                @csrf
+                                <button type="submit" class="w-8 h-8 bg-green-50 hover:bg-green-100 text-green-600 rounded-lg transition flex items-center justify-center" title="Force Paid">
+                                    <i class="fas fa-check text-xs"></i>
+                                </button>
+                            </form>
+                            <form action="{{ route('admin.bookings.cancel', $booking->id_bookings) }}" method="POST" class="inline" onsubmit="return confirm('Batalkan booking {{ $booking->booking_code }}?')">
+                                @csrf
+                                <button type="submit" class="w-8 h-8 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition flex items-center justify-center" title="Cancel">
+                                    <i class="fas fa-times text-xs"></i>
+                                </button>
+                            </form>
+                            @endif
                         </div>
                     </td>
                 </tr>

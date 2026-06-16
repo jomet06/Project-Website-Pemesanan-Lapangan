@@ -4,13 +4,24 @@
 @section('page-title', 'User Management')
 
 @section('content')
+@if(session('success'))
+<div class="bg-green-100 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-4 flex items-center gap-2">
+    <i class="fas fa-check-circle"></i> {{ session('success') }}
+</div>
+@endif
+@if(session('error'))
+<div class="bg-red-100 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 flex items-center gap-2">
+    <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
+</div>
+@endif
+
 <!-- User Metrics -->
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
     <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm font-medium text-slate-500">Total Users</p>
-                <p class="text-2xl font-extrabold text-slate-800 mt-1">{{ $totalUsers ?? 256 }}</p>
+                <p class="text-2xl font-extrabold text-slate-800 mt-1">{{ $totalUsers ?? 0 }}</p>
             </div>
             <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center">
                 <i class="fas fa-users"></i>
@@ -20,8 +31,8 @@
     <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-slate-500">Active Now</p>
-                <p class="text-2xl font-extrabold text-green-600 mt-1">{{ $activeNow ?? 12 }}</p>
+                <p class="text-sm font-medium text-slate-500">Active (7 hari)</p>
+                <p class="text-2xl font-extrabold text-green-600 mt-1">{{ $activeNow ?? 0 }}</p>
             </div>
             <div class="w-10 h-10 bg-green-100 text-green-600 rounded-lg flex items-center justify-center">
                 <i class="fas fa-circle"></i>
@@ -32,7 +43,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm font-medium text-slate-500">Banned</p>
-                <p class="text-2xl font-extrabold text-red-600 mt-1">{{ $banned ?? 3 }}</p>
+                <p class="text-2xl font-extrabold text-red-600 mt-1">{{ $banned ?? 0 }}</p>
             </div>
             <div class="w-10 h-10 bg-red-100 text-red-600 rounded-lg flex items-center justify-center">
                 <i class="fas fa-ban"></i>
@@ -84,19 +95,31 @@
                     </td>
                     <td class="py-4 px-6 text-sm text-slate-600">{{ $user->created_at ? $user->created_at->format('d M Y') : '-' }}</td>
                     <td class="py-4 px-6">
-                        <span class="inline-flex items-center gap-1 text-xs font-bold text-green-700 bg-green-100 px-3 py-1 rounded-full">
-                            <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-                            Active
-                        </span>
+                        @if($user->banned_at)
+                            <span class="inline-flex items-center gap-1 text-xs font-bold text-red-700 bg-red-100 px-3 py-1 rounded-full">
+                                <span class="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                                Banned
+                            </span>
+                        @else
+                            <span class="inline-flex items-center gap-1 text-xs font-bold text-green-700 bg-green-100 px-3 py-1 rounded-full">
+                                <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                                Active
+                            </span>
+                        @endif
                     </td>
                     <td class="py-4 px-6">
                         <div class="flex items-center justify-center gap-2">
-                            <button class="w-8 h-8 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition flex items-center justify-center" title="Edit">
+                            <a href="{{ route('admin.users.edit', $user->id_users) }}" class="w-8 h-8 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition flex items-center justify-center" title="Edit">
                                 <i class="fas fa-pen text-xs"></i>
-                            </button>
-                            <button class="w-8 h-8 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition flex items-center justify-center" title="Ban">
-                                <i class="fas fa-ban text-xs"></i>
-                            </button>
+                            </a>
+                            @if($user->role !== 'admin')
+                                <form action="{{ route('admin.users.ban', $user->id_users) }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin {{ $user->banned_at ? 'unban' : 'ban' }} user {{ $user->username }}?')">
+                                    @csrf
+                                    <button type="submit" class="w-8 h-8 {{ $user->banned_at ? 'bg-green-50 hover:bg-green-100 text-green-600' : 'bg-red-50 hover:bg-red-100 text-red-600' }} rounded-lg transition flex items-center justify-center" title="{{ $user->banned_at ? 'Unban' : 'Ban' }}">
+                                        <i class="fas fa-{{ $user->banned_at ? 'check' : 'ban' }} text-xs"></i>
+                                    </button>
+                                </form>
+                            @endif
                         </div>
                     </td>
                 </tr>

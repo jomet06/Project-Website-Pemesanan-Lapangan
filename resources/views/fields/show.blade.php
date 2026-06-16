@@ -194,6 +194,25 @@
 
             checkDisabled(schedule) {
                 if (!schedule) return true;
+                
+                const now = new Date();
+                const todayStr = now.toISOString().split('T')[0];
+                const scheduleDate = schedule.date ? schedule.date.split('T')[0] : '';
+
+                // Check if schedule date has passed (earlier than today)
+                if (scheduleDate < todayStr) {
+                    return true;
+                }
+
+                // Check if schedule time has passed for today
+                if (scheduleDate === todayStr) {
+                    const [hours, minutes] = schedule.start_time.split(':').map(Number);
+                    const scheduleTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
+                    if (scheduleTime <= now) {
+                        return true;
+                    }
+                }
+
                 const statusRaw = schedule.status_schedules;
                 if (statusRaw === null || statusRaw === undefined) return true;
                 
@@ -240,41 +259,18 @@
 
                 const clickedId = String(clickedSchedule.id_schedules);
 
-                if (!this.selectionStart) {
-                    this.selectionStart = clickedSchedule;
-                    this.selectedScheduleIds = [clickedId];
-                } else if (this.selectionStart && !this.selectionEnd) {
-                    if (clickedSchedule.start_time <= this.selectionStart.start_time) {
-                        this.resetSelection();
-                        this.selectionStart = clickedSchedule;
-                        this.selectedScheduleIds = [clickedId];
-                        return;
-                    }
-                    this.selectionEnd = clickedSchedule;
-                    
-                    const startIndex = this.filteredSchedules.findIndex(s => String(s.id_schedules) === String(this.selectionStart.id_schedules));
-                    const endIndex = this.filteredSchedules.findIndex(s => String(s.id_schedules) === String(this.selectionEnd.id_schedules));
-                    
-                    let tempIds = [];
-                    for (let i = startIndex; i <= endIndex; i++) {
-                        if (this.checkDisabled(this.filteredSchedules[i])) {
-                            alert('Jadwal yang Anda pilih terpotong oleh jadwal yang sudah dibooking. Silakan pilih rentang waktu lain.');
-                            this.resetSelection();
-                            return;
-                        }
-                        tempIds.push(String(this.filteredSchedules[i].id_schedules));
-                    }
-                    this.selectedScheduleIds = tempIds;
+                const index = this.selectedScheduleIds.indexOf(clickedId);
+
+                if (index > -1) {
+                    // unselect
+                    this.selectedScheduleIds.splice(index, 1);
                 } else {
-                    this.resetSelection();
-                    this.selectionStart = clickedSchedule;
-                    this.selectedScheduleIds = [clickedId];
+                    // select
+                    this.selectedScheduleIds.push(clickedId);
                 }
             },
 
             resetSelection() {
-                this.selectionStart = null;
-                this.selectionEnd = null;
                 this.selectedScheduleIds = [];
             },
 
@@ -284,11 +280,14 @@
 
             get selectedTimeRange() {
                 if (this.selectedScheduleIds.length === 0) return '-';
-                const selected = this.filteredSchedules.filter(s => this.selectedScheduleIds.map(String).includes(String(s.id_schedules)));
-                if (selected.length === 0) return '-';
-                const minTime = selected[0].start_time;
-                const maxTime = selected[selected.length - 1].end_time;
-                return `${this.formatTime(minTime)} - ${this.formatTime(maxTime)}`;
+
+                const selected = this.filteredSchedules.filter(
+                    s => this.selectedScheduleIds.includes(String(s.id_schedules))
+                );
+
+                return selected
+                    .map(s => this.formatTime(s.start_time))
+                    .join(', ');
             },
 
             formatCurrency(amount) {
