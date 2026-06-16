@@ -13,6 +13,7 @@ class Schedule extends Model
 
     protected $fillable = [
         'field_id',
+        'court_number',
         'date',
         'start_time',
         'end_time',
@@ -23,7 +24,6 @@ class Schedule extends Model
         'date' => 'date',
     ];
 
-    // Relationships
     public function field()
     {
         return $this->belongsTo(Field::class, 'field_id', 'id_fields');
@@ -34,17 +34,15 @@ class Schedule extends Model
         return $this->hasOne(Booking::class, 'schedule_id', 'id_schedules');
     }
 
-    // Scopes
-    public function scopeAvailable($query)
+    public function scopeAvailable(\Illuminate\Database\Eloquent\Builder $query)
     {
         return $query->where('status_schedules', 'available');
     }
 
-    // Helpers
     public function getDurationHoursAttribute(): float
     {
         $start = \Carbon\Carbon::parse($this->start_time);
         $end   = \Carbon\Carbon::parse($this->end_time);
-        return $end->diffInMinutes($start) / 60;
+        return $start->diffInMinutes($end) / 60;
     }
 }

@@ -4,10 +4,10 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Models\BookingSchedule;
 use App\Models\Field;
 use App\Models\Payment;
 use App\Models\Schedule;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Midtrans\Config;
@@ -42,9 +42,11 @@ class BookingController extends Controller
         }
         if ($request->filled('date')) {
             $query->whereHas('schedules', function ($q) use ($request) {
-                $q->where('date', $request->date)
-                  ->where('status_schedules', 'available');
+                $q->where('date', $request->date)->where('status_schedules', 'available');
             });
+        }
+        if ($request->filled('search')) {
+            $query->where('name_fields', 'like', '%' . $request->search . '%');
         }
 
         $fields = $query->paginate(9);
@@ -56,15 +58,38 @@ class BookingController extends Controller
     public function showField(Field $field)
     {
         $field->load('facilities');
-        $schedules = Schedule::where('field_id', $field->id_fields)
+
+        $rawSchedules = Schedule::where('field_id', $field->id_fields)
             ->where('date', '>=', today())
             ->where('status_schedules', 'available')
             ->orderBy('date')
+            ->orderBy('court_number')
             ->orderBy('start_time')
-            ->get()
-            ->groupBy('date');
+            ->get();
 
-        return view('user.fields.show', compact('field', 'schedules'));
+        $hasCourts = $rawSchedules->whereNotNull('court_number')->isNotEmpty();
+        $courts    = $rawSchedules->pluck('court_number')->filter()->unique()->sort()->values();
+
+        // Build JSON-friendly schedule data: {date: {court_or_"single": [{id,start,end}]}}
+        $scheduleData = [];
+        $dates        = [];
+
+        foreach ($rawSchedules as $slot) {
+            $date  = $slot->date->format('Y-m-d');
+            $court = $hasCourts ? (string) $slot->court_number : 'single';
+
+            if (!in_array($date, $dates)) {
+                $dates[] = $date;
+            }
+
+            $scheduleData[$date][$court][] = [
+                'id'    => $slot->id_schedules,
+                'start' => substr($slot->start_time, 0, 5),
+                'end'   => substr($slot->end_time, 0, 5),
+            ];
+        }
+
+        return view('user.fields.show', compact('field', 'scheduleData', 'dates', 'hasCourts', 'courts'));
     }
 
     // =====================
@@ -74,56 +99,77 @@ class BookingController extends Controller
     public function confirmBooking(Request $request, Field $field)
     {
         $request->validate([
-            'schedule_id' => 'required|exists:schedules,id_schedules',
+            'schedule_ids'   => 'required|array|min:1',
+            'schedule_ids.*' => 'exists:schedules,id_schedules',
         ]);
 
-        $schedule = Schedule::findOrFail($request->schedule_id);
+        $schedules = Schedule::whereIn('id_schedules', $request->schedule_ids)
+            ->where('status_schedules', 'available')
+            ->orderBy('start_time')
+            ->get();
 
-        if ($schedule->status_schedules !== 'available') {
-            return back()->withErrors(['schedule' => 'Jadwal ini sudah tidak tersedia.']);
+        if ($schedules->count() !== count($request->schedule_ids)) {
+            return back()->withErrors(['schedule' => 'Beberapa jadwal yang dipilih sudah tidak tersedia.']);
         }
 
-        $duration   = $schedule->duration_hours;
-        $totalPrice = $duration * $field->price_per_hour;
+        $totalHours  = $schedules->count();
+        $totalPrice  = $totalHours * $field->price_per_hour;
+        $courtNumber = $schedules->first()->court_number;
 
-        return view('user.bookings.confirm', compact('field', 'schedule', 'totalPrice'));
+        return view('user.bookings.confirm', compact('field', 'schedules', 'totalPrice', 'courtNumber'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'schedule_id' => 'required|exists:schedules,id_schedules',
-            'field_id'    => 'required|exists:fields,id_fields',
+            'schedule_ids'   => 'required|array|min:1',
+            'schedule_ids.*' => 'exists:schedules,id_schedules',
+            'field_id'       => 'required|exists:fields,id_fields',
         ]);
 
-        $schedule = Schedule::findOrFail($request->schedule_id);
-        $field    = Field::findOrFail($request->field_id);
+        $schedules = Schedule::whereIn('id_schedules', $request->schedule_ids)
+            ->where('status_schedules', 'available')
+            ->orderBy('date')
+            ->orderBy('start_time')
+            ->get();
 
-        if ($schedule->status_schedules !== 'available') {
-            return back()->withErrors(['schedule' => 'Jadwal ini sudah tidak tersedia.']);
+        if ($schedules->count() !== count($request->schedule_ids)) {
+            return back()->withErrors(['schedule' => 'Jadwal sudah tidak tersedia. Silakan pilih ulang.']);
         }
+
+        $field         = Field::findOrFail($request->field_id);
+        $firstSchedule = $schedules->first();
+        $lastSchedule  = $schedules->last();
+        $totalHours    = $schedules->count();
+        $totalPrice    = $totalHours * $field->price_per_hour;
 
         try {
             DB::beginTransaction();
 
-            $duration   = $schedule->duration_hours;
-            $totalPrice = $duration * $field->price_per_hour;
-
-            // Create Booking
             $booking = Booking::create([
-                'user_id'        => auth()->id(),
-                'schedule_id'    => $schedule->id_schedules,
-                'booking_code'   => Booking::generateCode(),
-                'total_price'    => $totalPrice,
-                'status_bookings'=> 'pending',
-                'play_date'      => $schedule->date,
+                'user_id'         => auth()->id(),
+                'schedule_id'     => $firstSchedule->id_schedules,
+                'booking_code'    => Booking::generateCode(),
+                'total_price'     => $totalPrice,
+                'status_bookings' => 'pending',
+                'play_date'       => $firstSchedule->date,
             ]);
 
-            // Mark schedule as booked
-            $schedule->update(['status_schedules' => 'booked']);
+            // Link all slots to this booking
+            foreach ($schedules as $schedule) {
+                BookingSchedule::create([
+                    'booking_id'  => $booking->id_bookings,
+                    'schedule_id' => $schedule->id_schedules,
+                ]);
+            }
 
-            // Create Midtrans Payment
-            $orderId = 'ORDER-' . $booking->id_bookings . '-' . time();
+            // Mark all slots as booked
+            Schedule::whereIn('id_schedules', $request->schedule_ids)
+                ->update(['status_schedules' => 'booked']);
+
+            $orderId   = 'ORDER-' . $booking->id_bookings . '-' . time();
+            $timeLabel = substr($firstSchedule->start_time, 0, 5) . '-' . substr($lastSchedule->end_time, 0, 5);
+            $courtInfo = $firstSchedule->court_number ? ' (Court ' . $firstSchedule->court_number . ')' : '';
 
             $params = [
                 'transaction_details' => [
@@ -138,8 +184,8 @@ class BookingController extends Controller
                     [
                         'id'       => $field->id_fields,
                         'price'    => (int) $field->price_per_hour,
-                        'quantity' => (int) $duration,
-                        'name'     => $field->name_fields . ' (' . $schedule->start_time . ' - ' . $schedule->end_time . ')',
+                        'quantity' => (int) $totalHours,
+                        'name'     => $field->name_fields . $courtInfo . ' (' . $timeLabel . ')',
                     ],
                 ],
                 'callbacks' => [
@@ -149,13 +195,12 @@ class BookingController extends Controller
 
             $snapToken = Snap::getSnapToken($params);
 
-            // Create Payment record
             Payment::create([
-                'booking_id'          => $booking->id_bookings,
-                'midtrans_order_id'   => $orderId,
-                'amount'              => $totalPrice,
-                'status_payments'     => 'pending',
-                'snap_token'          => $snapToken,
+                'booking_id'        => $booking->id_bookings,
+                'midtrans_order_id' => $orderId,
+                'amount'            => $totalPrice,
+                'status_payments'   => 'pending',
+                'snap_token'        => $snapToken,
             ]);
 
             DB::commit();
@@ -180,12 +225,11 @@ class BookingController extends Controller
 
     public function paymentCallback(Request $request)
     {
-        $serverKey = config('midtrans.server_key');
-        $orderId   = $request->order_id;
-        $statusCode = $request->status_code;
+        $serverKey   = config('midtrans.server_key');
+        $orderId     = $request->order_id;
+        $statusCode  = $request->status_code;
         $grossAmount = $request->gross_amount;
 
-        // Verify signature
         $signature = hash('sha512', $orderId . $statusCode . $grossAmount . $serverKey);
 
         if ($signature !== $request->signature_key) {
@@ -199,17 +243,17 @@ class BookingController extends Controller
 
         if (in_array($transactionStatus, ['capture', 'settlement'])) {
             $payment->update([
-                'status_payments'          => 'success',
-                'midtrans_transaction_id'  => $request->transaction_id,
-                'payment_method'           => $request->payment_type,
-                'paid_at'                  => now(),
+                'status_payments'         => 'success',
+                'midtrans_transaction_id' => $request->transaction_id,
+                'payment_method'          => $request->payment_type,
+                'paid_at'                 => now(),
             ]);
             $booking->update(['status_bookings' => 'confirmed']);
         } elseif (in_array($transactionStatus, ['cancel', 'deny', 'expire'])) {
             $payment->update(['status_payments' => $transactionStatus === 'expire' ? 'expired' : $transactionStatus]);
             $booking->update(['status_bookings' => 'cancelled']);
-            // Free up schedule
-            $booking->schedule->update(['status_schedules' => 'available']);
+            $booking->load('bookingSchedules');
+            $booking->freeAllSchedules();
         }
 
         return response()->json(['message' => 'OK']);
@@ -218,7 +262,7 @@ class BookingController extends Controller
     public function success(Booking $booking)
     {
         if ($booking->user_id !== auth()->id()) abort(403);
-        $booking->load(['schedule.field', 'payment']);
+        $booking->load(['schedule.field', 'payment', 'bookingSchedules.schedule']);
         return view('user.bookings.success', compact('booking'));
     }
 
@@ -228,7 +272,7 @@ class BookingController extends Controller
 
     public function history()
     {
-        $bookings = Booking::with(['schedule.field', 'payment'])
+        $bookings = Booking::with(['schedule.field', 'payment', 'bookingSchedules.schedule'])
             ->where('user_id', auth()->id())
             ->latest()
             ->paginate(10);
@@ -259,10 +303,9 @@ class BookingController extends Controller
                 'cancel_reason'   => $request->cancel_reason,
             ]);
 
-            // Free up schedule
-            $booking->schedule->update(['status_schedules' => 'available']);
+            $booking->load('bookingSchedules');
+            $booking->freeAllSchedules();
 
-            // Update payment if exists
             if ($booking->payment) {
                 $booking->payment->update(['status_payments' => 'cancel']);
             }

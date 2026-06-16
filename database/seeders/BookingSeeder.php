@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Booking;
+use App\Models\BookingSchedule;
 use App\Models\Payment;
 use App\Models\Schedule;
 use App\Models\User;
@@ -27,7 +28,6 @@ class BookingSeeder extends Seeder
         foreach ($bookingData as $i => $data) {
             $user = $users[$i % $users->count()];
 
-            // Find an available schedule
             $schedule = Schedule::where('status_schedules', 'available')
                 ->where('date', Carbon::today()->addDays($data['daysAhead'])->format('Y-m-d'))
                 ->first();
@@ -35,8 +35,7 @@ class BookingSeeder extends Seeder
             if (!$schedule) continue;
 
             $field      = $schedule->field;
-            $duration   = $schedule->duration_hours;
-            $totalPrice = $duration * $field->price_per_hour;
+            $totalPrice = $schedule->duration_hours * $field->price_per_hour;
             $code       = 'BK-' . strtoupper(substr(md5(uniqid()), 0, 8));
 
             $booking = Booking::create([
@@ -47,22 +46,29 @@ class BookingSeeder extends Seeder
                 'status_bookings' => $data['status'],
                 'play_date'       => $schedule->date,
                 'cancelled_at'    => $data['status'] === 'cancelled' ? now() : null,
-                'cancel_reason'   => $data['status'] === 'cancelled' ? 'Ada keperluan mendadak keluarga.' : null,
+                'cancel_reason'   => $data['status'] === 'cancelled' ? 'Ada keperluan mendadak.' : null,
             ]);
 
-            $schedule->update(['status_schedules' => $data['status'] === 'cancelled' ? 'available' : 'booked']);
+            // Pivot record
+            BookingSchedule::create([
+                'booking_id'  => $booking->id_bookings,
+                'schedule_id' => $schedule->id_schedules,
+            ]);
+
+            $scheduleStatus = ($data['status'] === 'cancelled') ? 'available' : 'booked';
+            $schedule->update(['status_schedules' => $scheduleStatus]);
 
             $orderId = 'ORDER-' . $booking->id_bookings . '-' . time() . $i;
 
             Payment::create([
-                'booking_id'               => $booking->id_bookings,
-                'midtrans_order_id'        => $orderId,
-                'midtrans_transaction_id'  => $data['payStatus'] === 'success' ? 'TXN-' . strtoupper(uniqid()) : null,
-                'amount'                   => $totalPrice,
-                'payment_method'           => $data['payStatus'] === 'success' ? 'bank_transfer' : null,
-                'status_payments'          => $data['payStatus'],
-                'paid_at'                  => $data['payStatus'] === 'success' ? now()->subHours(rand(1, 24)) : null,
-                'snap_token'               => $data['payStatus'] === 'pending' ? 'dummy-snap-token-' . uniqid() : null,
+                'booking_id'              => $booking->id_bookings,
+                'midtrans_order_id'       => $orderId,
+                'midtrans_transaction_id' => $data['payStatus'] === 'success' ? 'TXN-' . strtoupper(uniqid()) : null,
+                'amount'                  => $totalPrice,
+                'payment_method'          => $data['payStatus'] === 'success' ? 'bank_transfer' : null,
+                'status_payments'         => $data['payStatus'],
+                'paid_at'                 => $data['payStatus'] === 'success' ? now()->subHours(rand(1, 24)) : null,
+                'snap_token'              => $data['payStatus'] === 'pending' ? 'dummy-snap-token-' . uniqid() : null,
             ]);
         }
     }

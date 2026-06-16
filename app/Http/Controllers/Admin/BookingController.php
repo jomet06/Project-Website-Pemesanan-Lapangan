@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Models\BookingSchedule;
 use App\Models\Field;
 use App\Models\Payment;
 use App\Models\Schedule;
@@ -37,7 +38,7 @@ class BookingController extends Controller
 
     public function show(Booking $booking)
     {
-        $booking->load(['user', 'schedule.field', 'payment']);
+        $booking->load(['user', 'schedule.field', 'payment', 'bookingSchedules.schedule']);
         return view('admin.bookings.show', compact('booking'));
     }
 
@@ -50,7 +51,8 @@ class BookingController extends Controller
         $booking->update(['status_bookings' => $request->status_bookings]);
 
         if ($request->status_bookings === 'cancelled') {
-            $booking->schedule->update(['status_schedules' => 'available']);
+            $booking->load('bookingSchedules');
+            $booking->freeAllSchedules();
             if ($booking->payment) {
                 $booking->payment->update(['status_payments' => 'cancel']);
             }
@@ -76,6 +78,7 @@ class BookingController extends Controller
                 $schedules = Schedule::where('field_id', $request->field_id)
                     ->where('date', $request->date)
                     ->where('status_schedules', 'available')
+                    ->orderBy('court_number')
                     ->orderBy('start_time')
                     ->get();
             }
@@ -108,7 +111,6 @@ class BookingController extends Controller
             $duration   = $schedule->duration_hours;
             $totalPrice = $duration * $field->price_per_hour;
 
-            // Determine user
             if ($request->customer_type === 'walkin') {
                 $timestamp = time();
                 $user = User::create([
@@ -131,17 +133,22 @@ class BookingController extends Controller
                 'play_date'       => $schedule->date,
             ]);
 
+            BookingSchedule::create([
+                'booking_id'  => $booking->id_bookings,
+                'schedule_id' => $schedule->id_schedules,
+            ]);
+
             $schedule->update(['status_schedules' => 'booked']);
 
             $orderId = 'OFFLINE-' . $booking->id_bookings . '-' . time();
 
             Payment::create([
-                'booking_id'             => $booking->id_bookings,
-                'midtrans_order_id'      => $orderId,
-                'amount'                 => $totalPrice,
-                'payment_method'         => $request->payment_method,
-                'status_payments'        => 'success',
-                'paid_at'                => now(),
+                'booking_id'        => $booking->id_bookings,
+                'midtrans_order_id' => $orderId,
+                'amount'            => $totalPrice,
+                'payment_method'    => $request->payment_method,
+                'status_payments'   => 'success',
+                'paid_at'           => now(),
             ]);
 
             DB::commit();

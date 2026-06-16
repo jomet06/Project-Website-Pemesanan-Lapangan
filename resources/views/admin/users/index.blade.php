@@ -15,7 +15,7 @@
         ['Admins', $totalAdmins, 'fas fa-shield-alt', 'bg-red-50 text-red-600'],
     ] as $s)
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3">
-        <div class="w-11 h-11 rounded-xl {{ explode(' ',$s[3])[0] }} flex items-center justify-center flex-shrink-0">
+        <div class="w-11 h-11 rounded-xl {{ explode(' ',$s[3])[0] }} flex items-center justify-center shrink-0">
             <i class="{{ $s[2] }} {{ explode(' ',$s[3])[1] }} text-lg"></i>
         </div>
         <div>
@@ -66,12 +66,12 @@
             <tr class="hover:bg-gray-50 transition">
                 <td class="px-5 py-4">
                     <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                        <div class="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm shrink-0">
                             {{ strtoupper(substr($user->name_users, 0, 1)) }}
                         </div>
                         <div>
                             <p class="font-semibold text-gray-900 text-sm leading-none">{{ $user->name_users }}</p>
-                            <p class="text-gray-400 text-xs mt-0.5">@{{ $user->username }}</p>
+                            <p class="text-gray-400 text-xs mt-0.5">{{ $user->username }}</p>
                         </div>
                     </div>
                 </td>

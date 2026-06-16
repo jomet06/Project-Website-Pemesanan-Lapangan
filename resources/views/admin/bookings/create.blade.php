@@ -77,10 +77,15 @@
                         @foreach($schedules as $slot)
                         <label class="slot-label cursor-pointer">
                             <input type="radio" name="schedule_id" value="{{ $slot->id_schedules }}"
-                                   class="sr-only slot-radio" required>
+                                   class="sr-only slot-radio"
+                                   data-start="{{ substr($slot->start_time,0,5) }}"
+                                   data-end="{{ substr($slot->end_time,0,5) }}"
+                                   required>
                             <div class="slot-card border-2 border-green-200 bg-green-50 text-green-700 rounded-xl py-3 text-center text-xs font-bold transition hover:border-green-400 hover:bg-green-100">
-                                {{ substr($slot->start_time,0,5) }}<br>
-                                <span class="text-green-500 font-normal">– {{ substr($slot->end_time,0,5) }}</span>
+                                {{ substr($slot->start_time,0,5) }} – {{ substr($slot->end_time,0,5) }}
+                                @if($slot->court_number)
+                                <br><span class="text-green-500 font-normal text-xs">Court {{ $slot->court_number }}</span>
+                                @endif
                             </div>
                         </label>
                         @endforeach
@@ -235,10 +240,8 @@
             const card = this.closest('.slot-label').querySelector('.slot-card');
             card.className = 'slot-card border-2 border-primary bg-blue-50 text-primary rounded-xl py-3 text-center text-xs font-bold transition';
 
-            // Parse time from the card text
-            const text = card.textContent.trim().split('–');
-            const start = text[0].trim();
-            const end   = text[1]?.trim() ?? '';
+            const start = this.dataset.start;
+            const end   = this.dataset.end ?? '';
 
             const [sh, sm] = start.split(':').map(Number);
             const [eh, em] = (end || '00:00').split(':').map(Number);

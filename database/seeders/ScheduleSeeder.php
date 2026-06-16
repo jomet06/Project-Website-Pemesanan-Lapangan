@@ -13,7 +13,6 @@ class ScheduleSeeder extends Seeder
     {
         $fields = Field::all();
 
-        // Generate schedules for today + 13 days ahead (2 weeks)
         $dates = collect(range(0, 13))->map(fn($d) => Carbon::today()->addDays($d)->format('Y-m-d'));
 
         $timeSlots = [
@@ -32,15 +31,21 @@ class ScheduleSeeder extends Seeder
         ];
 
         foreach ($fields as $field) {
+            // Badminton fields have 3 courts inside one GOR; others have a single court
+            $courts = ($field->type_fields === 'Badminton') ? [1, 2, 3] : [null];
+
             foreach ($dates as $date) {
                 foreach ($timeSlots as $slot) {
-                    Schedule::create([
-                        'field_id'         => $field->id_fields,
-                        'date'             => $date,
-                        'start_time'       => $slot['start'],
-                        'end_time'         => $slot['end'],
-                        'status_schedules' => 'available',
-                    ]);
+                    foreach ($courts as $court) {
+                        Schedule::create([
+                            'field_id'         => $field->id_fields,
+                            'court_number'     => $court,
+                            'date'             => $date,
+                            'start_time'       => $slot['start'],
+                            'end_time'         => $slot['end'],
+                            'status_schedules' => 'available',
+                        ]);
+                    }
                 }
             }
         }

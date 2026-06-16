@@ -8,7 +8,7 @@
         <p class="text-gray-500 text-sm mt-1">Periksa detail pesanan Anda sebelum melanjutkan ke pembayaran</p>
     </div>
 
-    <!-- Progress Steps -->
+    {{-- Progress Steps --}}
     <div class="flex items-center gap-0 mb-8">
         @foreach([['1','Pilih Jadwal',true],['2','Konfirmasi',true],['3','Pembayaran',false],['4','Selesai',false]] as $step)
         <div class="flex items-center {{ !$loop->last ? 'flex-1' : '' }}">
@@ -26,9 +26,8 @@
         @endforeach
     </div>
 
-    <!-- Order Summary Card -->
+    {{-- Order Summary Card --}}
     <div class="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden mb-5">
-        <!-- Field image header -->
         @if($field->image)
             <img src="{{ asset('storage/'.$field->image) }}" alt="{{ $field->name_fields }}" class="w-full h-40 object-cover">
         @else
@@ -39,25 +38,39 @@
             <div class="flex items-start justify-between mb-5">
                 <div>
                     <h2 class="font-bold text-gray-900 text-xl">{{ $field->name_fields }}</h2>
-                    <p class="text-gray-500 text-sm flex items-center gap-1.5 mt-1">
-                        <i class="fas fa-map-marker-alt text-xs"></i>{{ $field->description }}
+                    @if($courtNumber)
+                    <p class="text-primary text-sm font-semibold mt-0.5">
+                        <i class="fas fa-layer-group mr-1"></i>Court {{ $courtNumber }}
                     </p>
+                    @endif
                 </div>
+                @if($field->type_fields)
                 <span class="bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-1 rounded-full">{{ $field->type_fields }}</span>
+                @endif
             </div>
+
+            @php
+                $firstSchedule = $schedules->first();
+                $lastSchedule  = $schedules->last();
+                $totalHours    = $schedules->count();
+            @endphp
 
             <div class="space-y-3 border-t border-gray-100 pt-5">
                 <div class="flex justify-between text-sm">
                     <span class="text-gray-500 flex items-center gap-2"><i class="fas fa-calendar text-gray-400"></i>Tanggal Main</span>
-                    <span class="font-semibold text-gray-900">{{ $schedule->date->translatedFormat('l, d F Y') }}</span>
+                    <span class="font-semibold text-gray-900">
+                        {{ $firstSchedule->date->translatedFormat('l, d F Y') }}
+                    </span>
                 </div>
                 <div class="flex justify-between text-sm">
                     <span class="text-gray-500 flex items-center gap-2"><i class="fas fa-clock text-gray-400"></i>Waktu</span>
-                    <span class="font-semibold text-gray-900">{{ substr($schedule->start_time,0,5) }} – {{ substr($schedule->end_time,0,5) }} WIB</span>
+                    <span class="font-semibold text-gray-900">
+                        {{ substr($firstSchedule->start_time,0,5) }} – {{ substr($lastSchedule->end_time,0,5) }} WIB
+                    </span>
                 </div>
                 <div class="flex justify-between text-sm">
                     <span class="text-gray-500 flex items-center gap-2"><i class="fas fa-hourglass text-gray-400"></i>Durasi</span>
-                    <span class="font-semibold text-gray-900">{{ $schedule->duration_hours }} Jam</span>
+                    <span class="font-semibold text-gray-900">{{ $totalHours }} Jam</span>
                 </div>
                 <div class="flex justify-between text-sm">
                     <span class="text-gray-500 flex items-center gap-2"><i class="fas fa-users text-gray-400"></i>Kapasitas</span>
@@ -69,10 +82,10 @@
                 </div>
             </div>
 
-            <!-- Price breakdown -->
+            {{-- Price breakdown --}}
             <div class="mt-5 pt-4 border-t border-gray-100">
                 <div class="flex justify-between text-sm text-gray-500 mb-2">
-                    <span>Rp {{ number_format($field->price_per_hour,0,',','.') }} × {{ $schedule->duration_hours }} jam</span>
+                    <span>Rp {{ number_format($field->price_per_hour,0,',','.') }} × {{ $totalHours }} jam</span>
                     <span class="text-gray-700">Rp {{ number_format($totalPrice,0,',','.') }}</span>
                 </div>
                 <div class="flex justify-between font-bold text-lg border-t border-gray-100 pt-3 mt-3">
@@ -83,20 +96,20 @@
         </div>
     </div>
 
-    <!-- User Info -->
+    {{-- Info Payment --}}
     <div class="bg-blue-50 border border-blue-200 rounded-2xl p-5 mb-6">
         <h3 class="font-semibold text-blue-900 mb-3 flex items-center gap-2">
             <i class="fas fa-info-circle text-blue-500"></i>Informasi Pembayaran
         </h3>
         <ul class="text-sm text-blue-800 space-y-1.5">
-            <li class="flex items-start gap-2"><i class="fas fa-check text-blue-500 mt-0.5 flex-shrink-0"></i>Pembayaran diproses melalui Midtrans (aman & terenkripsi)</li>
-            <li class="flex items-start gap-2"><i class="fas fa-check text-blue-500 mt-0.5 flex-shrink-0"></i>Tersedia: Transfer Bank, QRIS, e-Wallet, Virtual Account</li>
-            <li class="flex items-start gap-2"><i class="fas fa-check text-blue-500 mt-0.5 flex-shrink-0"></i>E-ticket dikirim ke email setelah pembayaran berhasil</li>
-            <li class="flex items-start gap-2"><i class="fas fa-exclamation-triangle text-yellow-500 mt-0.5 flex-shrink-0"></i>Pembatalan maksimal H-3 sebelum jadwal bermain</li>
+            <li class="flex items-start gap-2"><i class="fas fa-check text-blue-500 mt-0.5 shrink-0"></i>Pembayaran diproses melalui Midtrans (aman & terenkripsi)</li>
+            <li class="flex items-start gap-2"><i class="fas fa-check text-blue-500 mt-0.5 shrink-0"></i>Tersedia: Transfer Bank, QRIS, e-Wallet, Virtual Account</li>
+            <li class="flex items-start gap-2"><i class="fas fa-check text-blue-500 mt-0.5 shrink-0"></i>E-ticket dikirim ke email setelah pembayaran berhasil</li>
+            <li class="flex items-start gap-2"><i class="fas fa-exclamation-triangle text-yellow-500 mt-0.5 shrink-0"></i>Pembatalan maksimal H-3 sebelum jadwal bermain</li>
         </ul>
     </div>
 
-    <!-- Action Buttons -->
+    {{-- Action Buttons --}}
     <div class="flex gap-3">
         <a href="{{ route('user.fields.show', $field) }}"
            class="flex-1 border-2 border-gray-200 text-gray-700 text-center font-semibold py-3 rounded-xl hover:bg-gray-50 transition text-sm">
@@ -104,7 +117,10 @@
         </a>
         <form method="POST" action="{{ route('user.bookings.store') }}" class="flex-1">
             @csrf
-            <input type="hidden" name="schedule_id" value="{{ $schedule->id_schedules }}">
+            {{-- All selected schedule IDs --}}
+            @foreach($schedules as $s)
+            <input type="hidden" name="schedule_ids[]" value="{{ $s->id_schedules }}">
+            @endforeach
             <input type="hidden" name="field_id" value="{{ $field->id_fields }}">
             <button type="submit"
                     class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl transition text-sm">
