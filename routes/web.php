@@ -76,6 +76,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     // Bookings Management
     Route::get('/bookings', [AdminBooking::class, 'index'])->name('bookings.index');
+    Route::get('/bookings/offline/create', [AdminBooking::class, 'createOffline'])->name('bookings.offline.create');
+    Route::post('/bookings/offline', [AdminBooking::class, 'storeOffline'])->name('bookings.offline.store');
     Route::get('/bookings/{booking}', [AdminBooking::class, 'show'])->name('bookings.show');
     Route::patch('/bookings/{booking}/status', [AdminBooking::class, 'updateStatus'])->name('bookings.status');
 

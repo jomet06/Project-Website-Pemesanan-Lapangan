@@ -78,9 +78,10 @@ class ScheduleController extends Controller
             'end_time'         => 'required|date_format:H:i|after:start_time',
             'status_schedules' => 'required|in:available,booked,closed',
         ]);
-        // Check for overlapping schedules
+        // Check for overlapping schedules (exclude current schedule being edited)
         $overlap = Schedule::where('field_id', $validated['field_id'])
             ->where('date', $validated['date'])
+            ->where('id_schedules', '!=', $schedule->id_schedules)
             ->where(function ($query) use ($validated) {
                 $query->where('start_time', '<', $validated['end_time'])
                     ->where('end_time', '>', $validated['start_time']);

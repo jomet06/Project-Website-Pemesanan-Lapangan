@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             FacilitySeeder::class,
             FieldSeeder::class,
             ScheduleSeeder::class,
+            BookingSeeder::class,
         ]);
     }
 }

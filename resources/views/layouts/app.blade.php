@@ -160,13 +160,12 @@
                 <span class="text-white font-bold">ActiveCourt</span>
             </div>
             <div class="flex space-x-6 text-sm">
-                <a href="#" class="hover:text-white">Terms of Service</a>
-                <a href="#" class="hover:text-white">Ketentuan Layanan</a>
-                <a href="#" class="hover:text-white">Kebijakan Privasi</a>
-                <a href="#" class="hover:text-white">Info Proyek</a>
+                <a href="{{ route('guest.about') }}" class="hover:text-white">Tentang Kami</a>
+                <a href="{{ route('guest.contact') }}" class="hover:text-white">Kontak</a>
+                <a href="{{ route('guest.fields') }}" class="hover:text-white">Lapangan</a>
             </div>
         </div>
-        <p class="text-center text-xs mt-4 text-gray-600">© {{ date('Y') }} ActiveCourt - Kelompok 10. All rights reserved.</p>
+        <p class="text-center text-xs mt-4 text-gray-600">© {{ date('Y') }} ActiveCourt. All rights reserved.</p>
     </div>
 </footer>
 

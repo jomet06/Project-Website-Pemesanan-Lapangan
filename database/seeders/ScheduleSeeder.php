@@ -12,18 +12,20 @@ class ScheduleSeeder extends Seeder
     public function run(): void
     {
         $fields = Field::all();
-        
-        // Loop untuk membuat jadwal hari ini dan besok
-        $dates = [
-            Carbon::today()->format('Y-m-d'),
-            Carbon::tomorrow()->format('Y-m-d')
-        ];
 
-        // Definisi jam slot (per 1 jam atau per 2 jam sesuai durasi)
+        // Generate schedules for today + 13 days ahead (2 weeks)
+        $dates = collect(range(0, 13))->map(fn($d) => Carbon::today()->addDays($d)->format('Y-m-d'));
+
         $timeSlots = [
+            ['start' => '07:00', 'end' => '08:00'],
+            ['start' => '08:00', 'end' => '09:00'],
+            ['start' => '09:00', 'end' => '10:00'],
+            ['start' => '10:00', 'end' => '11:00'],
+            ['start' => '13:00', 'end' => '14:00'],
+            ['start' => '14:00', 'end' => '15:00'],
             ['start' => '15:00', 'end' => '16:00'],
             ['start' => '16:00', 'end' => '17:00'],
-            ['start' => '17:00', 'end' => '18:00'],
+            ['start' => '18:00', 'end' => '19:00'],
             ['start' => '19:00', 'end' => '20:00'],
             ['start' => '20:00', 'end' => '21:00'],
             ['start' => '21:00', 'end' => '22:00'],
@@ -37,7 +39,7 @@ class ScheduleSeeder extends Seeder
                         'date'             => $date,
                         'start_time'       => $slot['start'],
                         'end_time'         => $slot['end'],
-                        'status_schedules' => 'available', // Semua di-set tersedia di awal
+                        'status_schedules' => 'available',
                     ]);
                 }
             }

@@ -35,7 +35,7 @@
                                 {{ !request('type') ? 'checked' : '' }}>
                             Semua
                         </label>
-                        @foreach($sportTypes as $type)
+                        @foreach($types as $type)
                         <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
                             <input type="radio" name="type" value="{{ $type }}" class="text-primary accent-blue-600"
                                 {{ request('type') === $type ? 'checked' : '' }}>
