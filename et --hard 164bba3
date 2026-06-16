@@ -1,0 +1,22 @@
+[33mcommit bf2bd9e8dbb2f426f0fdd0583ba8eed0015ae832[m
+Author: jomet06 <jonathan.matthew06@gmail.com>
+Date:   Mon Jun 15 20:35:45 2026 +0700
+
+    Ini web 1.1
+
+app/Http/Controllers/Admin/UserController.php
+app/Http/Controllers/Field/Controller.php
+app/Http/Controllers/GuestController.php
+config/midtrans.php
+resources/views/admin/dashboard.blade.php
+resources/views/auth/login.blade.php
+resources/views/auth/register.blade.php
+resources/views/guest/fields.blade.php
+resources/views/guest/home.blade.php
+resources/views/layouts/admin.blade.php
+resources/views/layouts/app.blade.php
+resources/views/layouts/user.blade.php
+resources/views/layouts/welcome.blade.php
+resources/views/welcome.blade.php
+routes/api.php
+routes/web.php
