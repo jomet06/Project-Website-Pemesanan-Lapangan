@@ -90,8 +90,8 @@
                     @auth
                         <a href="{{ route('user.history') }}" class="text-sm font-bold {{ request()->routeIs('user.history') ? 'text-primary-600 border-b-2 border-primary-600' : 'text-slate-500 hover:text-slate-800' }} h-full flex items-center px-1 transition-colors">History</a>
                     @endauth
-                    <a href="#" class="text-sm font-bold text-slate-500 hover:text-slate-800 h-full flex items-center px-1 transition-colors">About</a>
-                    <a href="#" class="text-sm font-bold text-slate-500 hover:text-slate-800 h-full flex items-center px-1 transition-colors">Contact</a>
+                    <a href="{{ route('about') }}" class="text-sm font-bold {{ request()->routeIs('about') ? 'text-primary-600 border-b-2 border-primary-600' : 'text-slate-500 hover:text-slate-800' }} h-full flex items-center px-1 transition-colors">About</a>
+                    <a href="{{ route('contact') }}" class="text-sm font-bold {{ request()->routeIs('contact') ? 'text-primary-600 border-b-2 border-primary-600' : 'text-slate-500 hover:text-slate-800' }} h-full flex items-center px-1 transition-colors">Contact</a>
                 </div>
 
                 <div class="hidden md:flex items-center space-x-4">
@@ -170,6 +170,8 @@
                     <ul class="space-y-2 text-sm font-medium">
                         <li><a href="{{ route('home') }}" class="hover:text-white transition">Beranda</a></li>
                         <li><a href="{{ route('fields.index') }}" class="hover:text-white transition">Daftar Lapangan</a></li>
+                        <li><a href="{{ route('about') }}" class="hover:text-white transition">Tentang Kami</a></li>
+                        <li><a href="{{ route('contact') }}" class="hover:text-white transition">Kontak</a></li>
                         <li><a href="#" class="hover:text-white transition">Syarat & Ketentuan</a></li>
                         <li><a href="#" class="hover:text-white transition">Kebijakan Privasi</a></li>
                     </ul>

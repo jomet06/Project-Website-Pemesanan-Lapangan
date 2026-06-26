@@ -144,7 +144,7 @@
                                 <div
                                     class="bg-white/70 backdrop-blur-xl rounded-3xl border border-white/60 overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 group flex flex-col">
                                     <div class="relative h-48 bg-slate-200 overflow-hidden">
-                                        <img src="https://images.unsplash.com/photo-1544919982-b61976f0ba43?auto=format&fit=crop&q=80&w=800"
+                                        <img src="{{ $field->image ? asset('storage/' . $field->image) : 'https://images.unsplash.com/photo-1544919982-b61976f0ba43?auto=format&fit=crop&q=80&w=800' }}"
                                             alt="{{ $field->name_fields }}"
                                             class="w-full h-full object-cover group-hover:scale-110 transition duration-700 ease-in-out">
                                         <div

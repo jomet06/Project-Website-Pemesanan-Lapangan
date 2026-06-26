@@ -41,7 +41,7 @@
                     <td class="py-4 px-6">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 bg-slate-200 rounded-lg overflow-hidden flex-shrink-0">
-                                <img src="https://images.unsplash.com/photo-1544919982-b61976f0ba43?auto=format&fit=crop&q=80&w=100" class="w-full h-full object-cover">
+                                <img src="{{ $field->image ? asset('storage/' . $field->image) : 'https://images.unsplash.com/photo-1544919982-b61976f0ba43?auto=format&fit=crop&q=80&w=100' }}" class="w-full h-full object-cover">
                             </div>
                             <span class="font-semibold text-slate-800">{{ $field->name_fields }}</span>
                         </div>
@@ -94,7 +94,7 @@
                 <i class="fas fa-times text-xl"></i>
             </button>
         </div>
-        <form action="{{ route('admin.fields.store') }}" method="POST" class="p-6 space-y-4">
+        <form action="{{ route('admin.fields.store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4">
             @csrf
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -104,13 +104,19 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Tipe Olahraga</label>
-                    <select name="type_fields" required class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none">
-                        <option value="Futsal">Futsal</option>
-                        <option value="Badminton">Badminton</option>
-                        <option value="Basket">Basket</option>
-                        <option value="Voli">Voli</option>
-                        <option value="Tenis">Tenis</option>
-                    </select>
+                    <div x-data="{ selectedType: 'Futsal', customType: '' }">
+                        <select x-model="selectedType" :name="selectedType === 'Lainnya' ? '' : 'type_fields'" required class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none">
+                            <option value="Futsal">Futsal</option>
+                            <option value="Badminton">Badminton</option>
+                            <option value="Basket">Basket</option>
+                            <option value="Voli">Voli</option>
+                            <option value="Tenis">Tenis</option>
+                            <option value="Lainnya">Lainnya (Tulis Sendiri)</option>
+                        </select>
+                        <div x-show="selectedType === 'Lainnya'" style="display: none;" class="mt-2">
+                            <input type="text" x-model="customType" :name="selectedType === 'Lainnya' ? 'type_fields' : ''" :required="selectedType === 'Lainnya'" placeholder="Ketik tipe olahraga..." class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none">
+                        </div>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Alamat</label>
@@ -128,12 +134,20 @@
                            class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Sub-Courts (JSON)</label>
-                    <input type="text" name="sub_courts" value='["Lapangan 1"]' required
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Sub-Courts (Pisahkan dengan Koma)</label>
+                    <input type="text" name="sub_courts" value="Lapangan 1" required
                            class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none"
-                           placeholder='["Lapangan 1", "Lapangan 2"]'>
-                    <p class="text-xs text-slate-400 mt-1">Format JSON array</p>
+                           placeholder="Contoh: Lapangan A, Lapangan B">
+                    <p class="text-xs text-slate-400 mt-1">Pisahkan nama lapangan dengan tanda koma (,)</p>
                 </div>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Foto Lapangan (Opsional)</label>
+                <input type="file" name="image" accept="image/*"
+                       class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent-50 file:text-accent-700 hover:file:bg-accent-100">
+                @error('image')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
             </div>
             <div>
                 <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Deskripsi</label>

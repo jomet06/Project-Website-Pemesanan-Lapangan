@@ -72,12 +72,19 @@ class AdminController extends Controller
             'description' => 'nullable|string',
             'price_per_hour' => 'required|integer|min:0',
             'capacity' => 'required|integer|min:1',
-            'sub_courts' => 'required|json',
+            'sub_courts' => 'required|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $subCourts = json_decode($request->sub_courts, true);
-        if (!is_array($subCourts) || empty($subCourts)) {
-            return back()->with('error', 'Sub-courts harus berupa array JSON yang valid dengan minimal 1 item.');
+        $subCourts = array_map('trim', explode(',', $request->sub_courts));
+        $subCourts = array_filter($subCourts);
+        if (empty($subCourts)) {
+            return back()->with('error', 'Sub-courts harus diisi dengan format yang dipisahkan koma, minimal 1 item.');
+        }
+
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('fields', 'public');
         }
 
         Field::query()->create([
@@ -87,7 +94,7 @@ class AdminController extends Controller
             'description' => $request->description ?? '',
             'price_per_hour' => $request->price_per_hour,
             'capacity' => $request->capacity,
-            'image' => $request->image ?? null,
+            'image' => $imagePath,
             'sub_courts' => $subCourts,
         ]);
 
@@ -111,15 +118,17 @@ class AdminController extends Controller
             'description' => 'nullable|string',
             'price_per_hour' => 'required|integer|min:0',
             'capacity' => 'required|integer|min:1',
-            'sub_courts' => 'required|json',
+            'sub_courts' => 'required|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $subCourts = json_decode($request->sub_courts, true);
-        if (!is_array($subCourts) || empty($subCourts)) {
-            return back()->with('error', 'Sub-courts harus berupa array JSON yang valid dengan minimal 1 item.');
+        $subCourts = array_map('trim', explode(',', $request->sub_courts));
+        $subCourts = array_filter($subCourts);
+        if (empty($subCourts)) {
+            return back()->with('error', 'Sub-courts harus diisi dengan format yang dipisahkan koma, minimal 1 item.');
         }
 
-        $field->update([
+        $data = [
             'name_fields' => $request->name_fields,
             'type_fields' => $request->type_fields,
             'address' => $request->address,
@@ -127,7 +136,18 @@ class AdminController extends Controller
             'price_per_hour' => $request->price_per_hour,
             'capacity' => $request->capacity,
             'sub_courts' => $subCourts,
-        ]);
+        ];
+
+        if ($request->hasFile('image')) {
+            // Hapus foto lama jika ada
+            if ($field->image) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($field->image);
+            }
+            $imagePath = $request->file('image')->store('fields', 'public');
+            $data['image'] = $imagePath;
+        }
+
+        $field->update($data);
 
         return redirect()->route('admin.fields')->with('success', 'Lapangan berhasil diperbarui.');
     }
@@ -140,6 +160,10 @@ class AdminController extends Controller
         $activeSchedules = $field->schedules()->where('status_schedules', 'Booked')->count();
         if ($activeSchedules > 0) {
             return back()->with('error', 'Tidak dapat menghapus lapangan yang memiliki jadwal aktif.');
+        }
+
+        if ($field->image) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($field->image);
         }
 
         $field->delete();

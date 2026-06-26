@@ -69,15 +69,19 @@
                     <h2 class="text-xl font-bold text-slate-800 mb-5">Pilih Sub-Lapangan</h2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                         @foreach($field->sub_courts as $sub)
+                            @php 
+                                $subName = is_array($sub) ? ($sub['name'] ?? 'Sub-Lapangan') : $sub;
+                                $subType = is_array($sub) ? ($sub['type'] ?? 'Fasilitas Standar') : 'Fasilitas Standar';
+                            @endphp
                             <label class="bg-white border-2 rounded-xl p-4 cursor-pointer relative transition-all block"
-                                   :class="selectedSubcourt === '{{ $sub['name'] }}' ? 'border-primary-500 shadow-[0_0_0_4px_rgba(59,130,246,0.1)]' : 'border-slate-200 hover:border-slate-300'">
-                                <input type="radio" name="subcourt" value="{{ $sub['name'] }}" x-model="selectedSubcourt" class="hidden">
+                                   :class="selectedSubcourt === '{{ $subName }}' ? 'border-primary-500 shadow-[0_0_0_4px_rgba(59,130,246,0.1)]' : 'border-slate-200 hover:border-slate-300'">
+                                <input type="radio" name="subcourt" value="{{ $subName }}" x-model="selectedSubcourt" class="hidden">
                                 <div class="flex justify-between items-start mb-2">
                                     <span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">Tersedia</span>
-                                    <i class="fas fa-running transition-colors" :class="selectedSubcourt === '{{ $sub['name'] }}' ? 'text-primary-500' : 'text-slate-400'"></i>
+                                    <i class="fas fa-running transition-colors" :class="selectedSubcourt === '{{ $subName }}' ? 'text-primary-500' : 'text-slate-400'"></i>
                                 </div>
-                                <div class="font-bold text-slate-800 text-lg">{{ $sub['name'] }}</div>
-                                <div class="text-xs text-slate-500 mt-1 font-medium">{{ $sub['type'] ?? 'Fasilitas Standar' }}</div>
+                                <div class="font-bold text-slate-800 text-lg">{{ $subName }}</div>
+                                <div class="text-xs text-slate-500 mt-1 font-medium">{{ $subType }}</div>
                             </label>
                         @endforeach
                     </div>
@@ -175,7 +179,7 @@
         const container = document.getElementById('booking-container');
         
         const parsedSubcourts = JSON.parse(container.dataset.subcourts);
-        const initialSubcourt = (parsedSubcourts && parsedSubcourts.length > 0) ? parsedSubcourts[0].name : '';
+        const initialSubcourt = (parsedSubcourts && parsedSubcourts.length > 0) ? (parsedSubcourts[0].name || parsedSubcourts[0]) : '';
 
         return {
             schedules: JSON.parse(container.dataset.schedules),

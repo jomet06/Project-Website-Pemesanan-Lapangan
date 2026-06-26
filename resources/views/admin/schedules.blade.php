@@ -4,6 +4,27 @@
 @section('page-title', 'Schedule Management')
 
 @section('content')
+@if(session('success'))
+<div class="bg-green-100 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-4 flex items-center gap-2">
+    <i class="fas fa-check-circle"></i> {{ session('success') }}
+</div>
+@endif
+@if(session('info'))
+<div class="bg-blue-100 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg mb-4 flex items-center gap-2">
+    <i class="fas fa-info-circle"></i> {{ session('info') }}
+</div>
+@endif
+@if(session('error'))
+<div class="bg-red-100 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 flex items-center gap-2">
+    <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
+</div>
+@endif
+@if($errors->any())
+<div class="bg-red-100 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 flex items-center gap-2">
+    <i class="fas fa-exclamation-circle"></i> Gagal menambahkan! Silakan periksa kembali isian form Anda.
+</div>
+@endif
+
 <!-- Add Schedule Form -->
 <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6">
     <div class="flex items-center gap-3 mb-5">
@@ -16,7 +37,7 @@
         </div>
     </div>
 
-    <form action="{{ route('admin.schedules.store') }}" method="POST" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
+    <form action="{{ route('admin.schedules.store') }}" method="POST" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4 items-end">
         @csrf
         <div class="lg:col-span-2">
             <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Lapangan</label>
@@ -28,8 +49,13 @@
             </select>
         </div>
         <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Tanggal</label>
-            <input type="date" name="date" required min="{{ \Carbon\Carbon::today()->toDateString() }}" 
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Tgl Mulai</label>
+            <input type="date" name="start_date" required min="{{ \Carbon\Carbon::today()->toDateString() }}" 
+                   class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none">
+        </div>
+        <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Tgl Selesai</label>
+            <input type="date" name="end_date" required min="{{ \Carbon\Carbon::today()->toDateString() }}" 
                    class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none">
         </div>
         <div>
@@ -41,14 +67,14 @@
             <input type="time" name="end_time" required class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none">
         </div>
         <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Interval (menit)</label>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Interval</label>
             <select name="interval" required class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none">
                 <option value="60">60 Menit</option>
                 <option value="90">90 Menit</option>
                 <option value="120">120 Menit</option>
             </select>
         </div>
-        <div class="lg:col-span-6">
+        <div class="lg:col-span-7 flex justify-end">
             <button type="submit" class="bg-accent-500 hover:bg-accent-600 text-white text-sm font-bold px-6 py-2.5 rounded-lg transition shadow-sm flex items-center gap-2">
                 <i class="fas fa-plus"></i> Generate Jadwal
             </button>
@@ -58,13 +84,28 @@
 
 <!-- Schedules Table -->
 <div class="bg-white rounded-xl border border-slate-200 shadow-sm">
-    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between px-6 py-4 border-b border-slate-100 gap-4">
         <h3 class="font-bold text-slate-800">Daftar Jadwal</h3>
-        <div class="flex items-center gap-2">
-            <input type="date" id="filterDate" onchange="filterSchedules()" 
-                   class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-accent-500 outline-none"
-                   value="{{ \Carbon\Carbon::today()->toDateString() }}">
-        </div>
+        <form action="{{ route('admin.schedules') }}" method="GET" class="flex flex-col lg:flex-row items-center gap-2 w-full md:w-auto">
+            <select name="filter_field_id" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-accent-500 outline-none w-full sm:w-auto">
+                <option value="">Semua Lapangan</option>
+                @foreach($fields as $field)
+                    <option value="{{ $field->id_fields }}" {{ request('filter_field_id') == $field->id_fields ? 'selected' : '' }}>
+                        {{ $field->name_fields }}
+                    </option>
+                @endforeach
+            </select>
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+                <input type="date" name="filter_start_date" 
+                       class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-accent-500 outline-none w-full"
+                       value="{{ request('filter_start_date', \Carbon\Carbon::today()->toDateString()) }}">
+                <span class="text-slate-400 font-medium text-sm text-center">s/d</span>
+                <input type="date" name="filter_end_date" 
+                       class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-accent-500 outline-none w-full"
+                       value="{{ request('filter_end_date', \Carbon\Carbon::today()->toDateString()) }}">
+            </div>
+            <button type="submit" class="bg-primary-500 hover:bg-primary-600 text-white text-sm font-bold px-4 py-1.5 rounded-lg transition w-full sm:w-auto">Filter</button>
+        </form>
     </div>
     <div class="overflow-x-auto">
         <table class="w-full" id="schedulesTable">
@@ -145,24 +186,4 @@
 </div>
 @endsection
 
-@push('scripts')
-<script>
-function filterSchedules() {
-    const filterDate = document.getElementById('filterDate').value;
-    const rows = document.querySelectorAll('#schedulesTable tbody tr[data-date]');
-    
-    rows.forEach(row => {
-        if (!filterDate || row.dataset.date === filterDate) {
-            row.style.display = '';
-        } else {
-            row.style.display = 'none';
-        }
-    });
-}
 
-// Apply initial filter
-document.addEventListener('DOMContentLoaded', function() {
-    filterSchedules();
-});
-</script>
-@endpush

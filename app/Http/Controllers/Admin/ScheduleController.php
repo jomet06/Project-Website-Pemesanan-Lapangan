@@ -10,12 +10,25 @@ use Carbon\Carbon;
 
 class ScheduleController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $fields = Field::with('schedules')->get();
-        $schedules = Schedule::with('field', 'booking.user')
-            ->whereDate('date', '>=', Carbon::today())
-            ->orderBy('date')
+        
+        $query = Schedule::with('field', 'booking.user');
+
+        if ($request->has('filter_start_date') && $request->filter_start_date && $request->has('filter_end_date') && $request->filter_end_date) {
+            $query->whereBetween('date', [$request->filter_start_date, $request->filter_end_date]);
+        } elseif ($request->has('filter_date') && $request->filter_date) {
+            $query->whereDate('date', $request->filter_date);
+        } else {
+            $query->whereDate('date', '>=', Carbon::today());
+        }
+
+        if ($request->has('filter_field_id') && $request->filter_field_id) {
+            $query->where('field_id', $request->filter_field_id);
+        }
+
+        $schedules = $query->orderBy('date')
             ->orderBy('start_time')
             ->get();
 
@@ -26,7 +39,8 @@ class ScheduleController extends Controller
     {
         $request->validate([
             'field_id' => 'required|exists:fields,id_fields',
-            'date' => 'required|date|after_or_equal:today',
+            'start_date' => 'required|date|after_or_equal:today',
+            'end_date' => 'required|date|after_or_equal:start_date',
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i|after:start_time',
             'interval' => 'required|integer|min:1',
@@ -34,35 +48,40 @@ class ScheduleController extends Controller
 
         $start = Carbon::parse($request->start_time);
         $end = Carbon::parse($request->end_time);
-        $intervalMinutes = $request->interval;
-        $date = $request->date;
+        $intervalMinutes = (int) $request->interval;
+        
+        $startDate = Carbon::parse($request->start_date);
+        $endDate = Carbon::parse($request->end_date);
         $fieldId = $request->field_id;
 
-        $current = $start->copy();
         $created = 0;
 
-        while ($current->copy()->addMinutes($intervalMinutes) <= $end) {
-            $slotStart = $current->format('H:i:s');
-            $slotEnd = $current->copy()->addMinutes($intervalMinutes)->format('H:i:s');
+        for ($d = $startDate->copy(); $d <= $endDate; $d->addDay()) {
+            $dateString = $d->format('Y-m-d');
+            $current = $start->copy();
 
-            // Check if schedule already exists for this time slot
-            $exists = Schedule::where('field_id', $fieldId)
-                ->where('date', $date)
-                ->where('start_time', $slotStart)
-                ->exists();
+            while ($current->copy()->addMinutes($intervalMinutes) <= $end) {
+                $slotStart = $current->format('H:i:s');
+                $slotEnd = $current->copy()->addMinutes($intervalMinutes)->format('H:i:s');
 
-            if (!$exists) {
-                Schedule::create([
-                    'field_id' => $fieldId,
-                    'date' => $date,
-                    'start_time' => $slotStart,
-                    'end_time' => $slotEnd,
-                    'status_schedules' => 'Available',
-                ]);
-                $created++;
+                $exists = Schedule::where('field_id', $fieldId)
+                    ->where('date', $dateString)
+                    ->where('start_time', $slotStart)
+                    ->exists();
+
+                if (!$exists) {
+                    Schedule::create([
+                        'field_id' => $fieldId,
+                        'date' => $dateString,
+                        'start_time' => $slotStart,
+                        'end_time' => $slotEnd,
+                        'status_schedules' => 'Available',
+                    ]);
+                    $created++;
+                }
+
+                $current->addMinutes($intervalMinutes);
             }
-
-            $current->addMinutes($intervalMinutes);
         }
 
         if ($created > 0) {

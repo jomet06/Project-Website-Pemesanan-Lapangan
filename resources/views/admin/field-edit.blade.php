@@ -10,7 +10,7 @@
             <h3 class="font-bold text-slate-800">Edit Lapangan</h3>
         </div>
 
-        <form action="{{ route('admin.fields.update', $field->id_fields) }}" method="POST" class="p-6 space-y-5">
+        <form action="{{ route('admin.fields.update', $field->id_fields) }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-5">
             @csrf
             @method('PUT')
 
@@ -22,13 +22,25 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Tipe Olahraga</label>
-                    <select name="type_fields" required class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none">
-                        <option value="Futsal" {{ $field->type_fields == 'Futsal' ? 'selected' : '' }}>Futsal</option>
-                        <option value="Badminton" {{ $field->type_fields == 'Badminton' ? 'selected' : '' }}>Badminton</option>
-                        <option value="Basket" {{ $field->type_fields == 'Basket' ? 'selected' : '' }}>Basket</option>
-                        <option value="Voli" {{ $field->type_fields == 'Voli' ? 'selected' : '' }}>Voli</option>
-                        <option value="Tenis" {{ $field->type_fields == 'Tenis' ? 'selected' : '' }}>Tenis</option>
-                    </select>
+                    @php
+                        $currentType = old('type_fields', $field->type_fields);
+                        $isStandard = in_array($currentType, ['Futsal', 'Badminton', 'Basket', 'Voli', 'Tenis']);
+                        $selectedType = $isStandard ? $currentType : 'Lainnya';
+                        $customType = $isStandard ? '' : $currentType;
+                    @endphp
+                    <div x-data="{ selectedType: '{{ $selectedType }}', customType: '{{ $customType }}' }">
+                        <select x-model="selectedType" :name="selectedType === 'Lainnya' ? '' : 'type_fields'" required class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none">
+                            <option value="Futsal">Futsal</option>
+                            <option value="Badminton">Badminton</option>
+                            <option value="Basket">Basket</option>
+                            <option value="Voli">Voli</option>
+                            <option value="Tenis">Tenis</option>
+                            <option value="Lainnya">Lainnya (Tulis Sendiri)</option>
+                        </select>
+                        <div x-show="selectedType === 'Lainnya'" style="{{ $selectedType === 'Lainnya' ? '' : 'display: none;' }}" class="mt-2">
+                            <input type="text" x-model="customType" :name="selectedType === 'Lainnya' ? 'type_fields' : ''" :required="selectedType === 'Lainnya'" placeholder="Ketik tipe olahraga..." class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none">
+                        </div>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Alamat</label>
@@ -46,11 +58,25 @@
                            class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Sub-Courts (JSON Array)</label>
-                    <input type="text" name="sub_courts" value="{{ old('sub_courts', json_encode($field->sub_courts ?? ['Lapangan 1'])) }}"
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Sub-Courts (Pisahkan dengan Koma)</label>
+                    <input type="text" name="sub_courts" value="{{ old('sub_courts', is_array($field->sub_courts) ? collect($field->sub_courts)->map(fn($c) => is_array($c) ? ($c['name'] ?? '') : $c)->implode(', ') : 'Lapangan 1') }}" required
                            class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none"
-                           placeholder='["Lapangan 1", "Lapangan 2"]'>
-                    <p class="text-xs text-slate-400 mt-1">Format JSON array, contoh: ["Lapangan 1","Lapangan 2"]</p>
+                           placeholder="Contoh: Lapangan A, Lapangan B">
+                    <p class="text-xs text-slate-400 mt-1">Pisahkan nama lapangan dengan tanda koma (,)</p>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Foto Lapangan (Opsional)</label>
+                    <input type="file" name="image" accept="image/*"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent-50 file:text-accent-700 hover:file:bg-accent-100">
+                    @error('image')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                    @if($field->image)
+                        <div class="mt-2">
+                            <p class="text-xs text-slate-500 mb-1">Foto saat ini:</p>
+                            <img src="{{ asset('storage/' . $field->image) }}" alt="Foto Lapangan" class="h-20 w-auto rounded-md object-cover border border-slate-200">
+                        </div>
+                    @endif
                 </div>
             </div>
             <div>

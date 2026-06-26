@@ -10,6 +10,11 @@ use App\Http\Controllers\PaymentController;
 
 // --- Guest & Public Routes ---
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::view('/about', 'user.about')->name('about');
+Route::view('/contact', 'user.contact')->name('contact');
+Route::post('/contact', function (\Illuminate\Http\Request $request) {
+    return back()->with('contact_success', true);
+})->name('contact.submit');
 
 // --- Auth Routes ---
 Route::view('/login', 'auth.login')->name('login');
