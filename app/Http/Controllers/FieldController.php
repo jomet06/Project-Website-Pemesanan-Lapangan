@@ -9,7 +9,7 @@ class FieldController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Field::with('facilities')->latest();
+        $query = Field::with('facilities');
 
         if ($location = $request->location) {
             $query->where('description', 'like', '%' . $location . '%');
@@ -21,6 +21,22 @@ class FieldController extends Controller
 
         if ($maxPrice = $request->max_price) {
             $query->where('price_per_hour', '<=', (int) $maxPrice);
+        }
+
+        if ($sort = $request->sort) {
+            if ($sort === 'Harga Terendah') {
+                $query->orderBy('price_per_hour', 'asc');
+            } elseif ($sort === 'Harga Tertinggi') {
+                $query->orderBy('price_per_hour', 'desc');
+            } elseif ($sort === 'Terpopuler') {
+                $query->withCount('schedules')->orderBy('schedules_count', 'desc');
+            } elseif ($sort === 'Terbaru') {
+                $query->latest();
+            } else {
+                $query->latest();
+            }
+        } else {
+            $query->latest();
         }
 
         $fields = $query->paginate(6)->withQueryString();

@@ -45,107 +45,175 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
-<body class="bg-slate-100 font-sans antialiased">
-
+<body class="bg-slate-50 font-sans text-slate-800 antialiased">
     <div class="flex h-screen overflow-hidden" x-data="{ sidebarOpen: window.innerWidth >= 1024 }">
         
         <!-- Sidebar Overlay (Mobile) -->
-        <div x-show="sidebarOpen" x-cloak @click="sidebarOpen = false" class="fixed inset-0 bg-black/50 z-40 lg:hidden"></div>
+        <div x-show="sidebarOpen" x-cloak @click="sidebarOpen = false" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 lg:hidden"
+             x-transition:enter="transition-opacity ease-linear duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity ease-linear duration-300"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"></div>
 
         <!-- Sidebar -->
         <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" 
-               class="fixed lg:static inset-y-0 left-0 z-50 w-64 bg-primary-800 text-white flex flex-col transition-transform duration-300 lg:translate-x-0">
+               class="fixed lg:static inset-y-0 left-0 z-50 w-64 bg-primary-900 border-r border-primary-800 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 shadow-[4px_0_24px_rgba(0,0,0,0.1)]">
             
             <!-- Logo -->
-            <div class="flex items-center justify-between h-16 px-6 border-b border-primary-700">
-                <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2 text-xl font-bold">
-                    <svg class="w-7 h-7 text-accent-500" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15l-5-5 1.41-1.41L11 14.17l7.59-7.59L20 8l-9 9z"/>
-                    </svg>
-                    ActiveCourt
+            <div class="flex items-center justify-between h-20 px-6 border-b border-primary-800">
+                <a href="{{ route('admin.dashboard') }}" class="text-xl font-extrabold text-white flex items-center gap-2">
+                    <i class="fas fa-layer-group text-primary-500 text-2xl"></i> ActiveCourt
                 </a>
-                <button @click="sidebarOpen = false" class="lg:hidden text-white/60 hover:text-white">
-                    <i class="fas fa-times"></i>
+                <button @click="sidebarOpen = false" class="lg:hidden text-slate-400 hover:text-white focus:outline-none">
+                    <i class="fas fa-times text-lg"></i>
                 </button>
             </div>
 
             <!-- Admin Info -->
-            <div class="px-6 py-4 border-b border-primary-700">
+            <div class="px-6 py-5 border-b border-primary-800 bg-primary-800/30">
                 <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 bg-accent-500 rounded-full flex items-center justify-center text-sm font-bold">A</div>
-                    <div>
-                        <p class="text-sm font-semibold text-white">Admin</p>
-                        <p class="text-xs text-primary-300">{{ Auth::user()->email ?? 'admin@activecourt.com' }}</p>
+                    <div class="w-10 h-10 rounded-full border-2 border-primary-700 shadow-sm overflow-hidden bg-primary-800 flex-shrink-0">
+                        <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name_users ?? 'Admin') }}&background=3b82f6&color=fff&bold=true" class="w-full h-full object-cover">
+                    </div>
+                    <div class="overflow-hidden">
+                        <p class="text-sm font-bold text-white truncate">{{ Auth::user()->name_users ?? 'Admin' }}</p>
+                        <p class="text-[11px] font-medium text-primary-300 uppercase tracking-wider mt-0.5">{{ Auth::user()->role ?? 'Administrator' }}</p>
                     </div>
                 </div>
             </div>
 
             <!-- Navigation -->
-            <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+            <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1.5 scrollbar-thin scrollbar-thumb-primary-700">
+                <div class="px-3 pb-2 pt-1 text-[11px] font-bold text-primary-400 uppercase tracking-wider">Main Menu</div>
+                
                 <a href="{{ route('admin.dashboard') }}" 
-                   class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition {{ request()->routeIs('admin.dashboard') ? 'bg-accent-500 text-white shadow-md' : 'text-primary-200 hover:bg-primary-700 hover:text-white' }}">
-                    <i class="fas fa-tachometer-alt w-5 text-center"></i>
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('admin.dashboard') ? 'bg-primary-600 text-white' : 'text-slate-300 hover:bg-primary-800 hover:text-white' }}">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center {{ request()->routeIs('admin.dashboard') ? 'bg-white/20 text-white' : 'bg-primary-800/50 text-slate-400' }}">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
                     Dashboard
                 </a>
+                
                 <a href="{{ route('admin.fields') }}" 
-                   class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition {{ request()->routeIs('admin.fields*') ? 'bg-accent-500 text-white shadow-md' : 'text-primary-200 hover:bg-primary-700 hover:text-white' }}">
-                    <i class="fas fa-map-marked-alt w-5 text-center"></i>
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('admin.fields*') ? 'bg-primary-600 text-white' : 'text-slate-300 hover:bg-primary-800 hover:text-white' }}">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center {{ request()->routeIs('admin.fields*') ? 'bg-white/20 text-white' : 'bg-primary-800/50 text-slate-400' }}">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </div>
                     Field Management
                 </a>
+                
                 <a href="{{ route('admin.users') }}" 
-                   class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition {{ request()->routeIs('admin.users*') ? 'bg-accent-500 text-white shadow-md' : 'text-primary-200 hover:bg-primary-700 hover:text-white' }}">
-                    <i class="fas fa-users w-5 text-center"></i>
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('admin.users*') ? 'bg-primary-600 text-white' : 'text-slate-300 hover:bg-primary-800 hover:text-white' }}">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center {{ request()->routeIs('admin.users*') ? 'bg-white/20 text-white' : 'bg-primary-800/50 text-slate-400' }}">
+                        <i class="fas fa-users"></i>
+                    </div>
                     User Management
                 </a>
+                
                 <a href="{{ route('admin.schedules') }}" 
-                   class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition {{ request()->routeIs('admin.schedules*') ? 'bg-accent-500 text-white shadow-md' : 'text-primary-200 hover:bg-primary-700 hover:text-white' }}">
-                    <i class="fas fa-clock w-5 text-center"></i>
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('admin.schedules*') ? 'bg-primary-600 text-white' : 'text-slate-300 hover:bg-primary-800 hover:text-white' }}">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center {{ request()->routeIs('admin.schedules*') ? 'bg-white/20 text-white' : 'bg-primary-800/50 text-slate-400' }}">
+                        <i class="fas fa-clock"></i>
+                    </div>
                     Schedule
                 </a>
+                
                 <a href="{{ route('admin.bookings') }}" 
-                   class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition {{ request()->routeIs('admin.bookings*') ? 'bg-accent-500 text-white shadow-md' : 'text-primary-200 hover:bg-primary-700 hover:text-white' }}">
-                    <i class="fas fa-calendar-check w-5 text-center"></i>
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('admin.bookings*') ? 'bg-primary-600 text-white' : 'text-slate-300 hover:bg-primary-800 hover:text-white' }}">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center {{ request()->routeIs('admin.bookings*') ? 'bg-white/20 text-white' : 'bg-primary-800/50 text-slate-400' }}">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
                     Bookings
                 </a>
             </nav>
 
             <!-- Bottom Actions -->
-            <div class="px-3 py-4 border-t border-primary-700">
-                <a href="{{ route('home') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-primary-200 hover:bg-primary-700 hover:text-white transition">
-                    <i class="fas fa-arrow-left w-5 text-center"></i>
-                    Kembali ke Website
+            <div class="p-4 border-t border-primary-800 bg-primary-800/30">
+                <a href="{{ route('home') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-300 hover:bg-primary-800 hover:text-white transition-all duration-200">
+                    <i class="fas fa-external-link-alt w-5 text-center text-slate-400"></i>
+                    Lihat Website
                 </a>
-                <form method="POST" action="{{ route('logout') }}">
+                <form method="POST" action="{{ route('logout') }}" class="mt-1">
                     @csrf
-                    <button type="submit" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-red-300 hover:bg-red-500/20 hover:text-red-200 transition mt-1">
-                        <i class="fas fa-sign-out-alt w-5 text-center"></i>
-                        Logout
+                    <button type="submit" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-all duration-200">
+                        <i class="fas fa-sign-out-alt w-5 text-center text-red-400"></i>
+                        Sign Out
                     </button>
                 </form>
             </div>
         </aside>
 
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col overflow-hidden">
+        <div class="flex-1 flex flex-col overflow-hidden bg-slate-50">
             <!-- Top Bar -->
-            <header class="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 lg:px-6 flex-shrink-0">
+            <header class="bg-white border-b border-slate-200 h-20 flex items-center justify-between px-6 flex-shrink-0 z-30">
                 <div class="flex items-center gap-4">
-                    <button @click="sidebarOpen = !sidebarOpen" class="text-slate-500 hover:text-slate-700 lg:hidden">
-                        <i class="fas fa-bars text-xl"></i>
+                    <button @click="sidebarOpen = !sidebarOpen" class="text-slate-500 hover:text-primary-600 transition-colors focus:outline-none lg:hidden bg-slate-50 w-10 h-10 rounded-full flex items-center justify-center">
+                        <i class="fas fa-bars"></i>
                     </button>
-                    <button @click="sidebarOpen = !sidebarOpen" class="text-slate-500 hover:text-slate-700 hidden lg:block">
-                        <i class="fas fa-bars text-xl"></i>
+                    <button @click="sidebarOpen = !sidebarOpen" class="text-slate-500 hover:text-primary-600 transition-colors focus:outline-none hidden lg:flex bg-slate-50 w-10 h-10 rounded-full items-center justify-center">
+                        <i class="fas fa-bars"></i>
                     </button>
-                    <h2 class="text-lg font-bold text-slate-800">@yield('page-title', 'Dashboard')</h2>
+                    <h2 class="text-xl font-bold text-slate-800 tracking-tight">@yield('page-title', 'Dashboard')</h2>
                 </div>
-                <div class="flex items-center gap-4">
-                    <span class="text-sm text-slate-500 hidden sm:block">{{ now()->format('d M Y') }}</span>
-                    <div class="w-8 h-8 bg-accent-500 rounded-full flex items-center justify-center text-white text-xs font-bold">A</div>
+                
+                <div class="flex items-center gap-5">
+                    <div class="hidden sm:flex items-center gap-2 text-sm font-medium text-slate-500 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
+                        <i class="far fa-calendar-alt text-slate-400"></i>
+                        {{ now()->format('d M Y') }}
+                    </div>
+                    
+                    <div class="h-8 w-px bg-slate-200 hidden sm:block"></div>
+                    
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" @click.away="open = false" class="flex items-center gap-2.5 focus:outline-none group">
+                            <div class="text-right hidden md:block">
+                                <p class="text-sm font-bold text-slate-800 leading-tight group-hover:text-primary-600 transition-colors">{{ Auth::user()->name_users ?? 'Admin' }}</p>
+                                <p class="text-xs text-slate-500 font-medium">Administrator</p>
+                            </div>
+                            <div class="w-10 h-10 rounded-full border-2 border-primary-100 overflow-hidden bg-slate-200 group-hover:border-primary-300 transition-colors shadow-sm">
+                                <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name_users ?? 'Admin') }}&background=1d4ed8&color=fff&bold=true" class="w-full h-full object-cover">
+                            </div>
+                            <i class="fas fa-chevron-down text-slate-400 text-xs transition-transform duration-300" :class="{'rotate-180': open}"></i>
+                        </button>
+
+                        <div x-show="open"
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="transform opacity-0 scale-95 translate-y-2"
+                             x-transition:enter-end="transform opacity-100 scale-100 translate-y-0"
+                             x-transition:leave="transition ease-in duration-150"
+                             x-transition:leave-start="transform opacity-100 scale-100 translate-y-0"
+                             x-transition:leave-end="transform opacity-0 scale-95 translate-y-2"
+                             class="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] border border-slate-100 py-2 z-50" style="display: none;">
+
+                            <div class="px-4 py-3 border-b border-slate-100 mb-1 md:hidden">
+                                <p class="text-sm font-bold text-slate-800">{{ Auth::user()->name_users ?? 'Admin' }}</p>
+                                <p class="text-xs text-slate-500 font-medium truncate">{{ Auth::user()->email ?? 'admin@activecourt.com' }}</p>
+                            </div>
+
+                            <a href="{{ route('home') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:text-primary-600 transition-colors">
+                                <div class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500"><i class="fas fa-external-link-alt text-xs"></i></div>
+                                Lihat Website
+                            </a>
+
+                            <div class="h-px bg-slate-100 my-2"></div>
+
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors">
+                                    <div class="w-7 h-7 rounded-lg bg-red-100 flex items-center justify-center text-red-500"><i class="fas fa-sign-out-alt text-xs"></i></div>
+                                    Sign Out
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </header>
 
             <!-- Page Content -->
-            <main class="flex-1 overflow-y-auto p-4 lg:p-6">
+            <main class="flex-1 overflow-y-auto p-4 lg:p-8">
                 @yield('content')
             </main>
         </div>

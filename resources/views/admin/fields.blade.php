@@ -105,7 +105,8 @@
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Tipe Olahraga</label>
                     <div x-data="{ selectedType: 'Futsal', customType: '' }">
-                        <select x-model="selectedType" :name="selectedType === 'Lainnya' ? '' : 'type_fields'" required class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none">
+                        <input type="hidden" name="type_fields" :value="selectedType === 'Lainnya' ? customType : selectedType">
+                        <select x-model="selectedType" class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none">
                             <option value="Futsal">Futsal</option>
                             <option value="Badminton">Badminton</option>
                             <option value="Basket">Basket</option>
@@ -114,7 +115,7 @@
                             <option value="Lainnya">Lainnya (Tulis Sendiri)</option>
                         </select>
                         <div x-show="selectedType === 'Lainnya'" style="display: none;" class="mt-2">
-                            <input type="text" x-model="customType" :name="selectedType === 'Lainnya' ? 'type_fields' : ''" :required="selectedType === 'Lainnya'" placeholder="Ketik tipe olahraga..." class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none">
+                            <input type="text" x-model="customType" :required="selectedType === 'Lainnya'" placeholder="Ketik tipe olahraga..." class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none">
                         </div>
                     </div>
                 </div>

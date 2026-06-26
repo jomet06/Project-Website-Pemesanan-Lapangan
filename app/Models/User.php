@@ -12,10 +12,11 @@ class User extends Authenticatable
     protected $table = 'users';
     protected $primaryKey = 'id_users';
 
-    // Kolom yang diizinkan untuk pengisian massal
     protected $fillable = [
+        'name_users',
         'username',
         'email',
+        'phone',
         'password',
         'google_id',
         'role',
@@ -26,11 +27,6 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    // Accessor for backward compatibility with views using name_users
-    public function getNameUsersAttribute()
-    {
-        return $this->username;
-    }
 
     public function bookings()
     {

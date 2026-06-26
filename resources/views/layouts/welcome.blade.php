@@ -39,7 +39,7 @@
                     <option value="">Select Sport</option>
                     <option value="Futsal">Futsal</option>
                     <option value="Badminton">Badminton</option>
-                    <option value="Basketball">Basketball</option>
+                    <option value="Basket">Basketball</option>
                 </select>
                 <i class="fas fa-chevron-down text-slate-400 absolute right-5 text-sm pointer-events-none"></i>
             </div>
@@ -87,7 +87,7 @@
             
             <div class="flex flex-col gap-8 lg:h-[500px]">
                 <!-- Small Card 1 -->
-                <a href="{{ route('fields.index', ['sports' => 'Basketball']) }}" class="group relative rounded-3xl overflow-hidden flex-1 shadow-lg hover:shadow-2xl transition-all duration-500 block">
+                <a href="{{ route('fields.index', ['sports' => 'Basket']) }}" class="group relative rounded-3xl overflow-hidden flex-1 shadow-lg hover:shadow-2xl transition-all duration-500 block">
                     <img src="https://images.unsplash.com/photo-1504450758481-7338eba7524a?auto=format&fit=crop&q=80&w=800" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-700 ease-in-out">
                     <div class="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <div class="absolute bottom-6 left-6 right-6 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">

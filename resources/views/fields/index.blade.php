@@ -43,7 +43,7 @@
                                 class="text-sm text-accent-600 hover:text-accent-700 font-medium">Hapus Filter</a>
                         </div>
 
-                        <form method="GET" action="{{ route('fields.index') }}" class="space-y-6">
+                        <form method="GET" action="{{ route('fields.index') }}" class="space-y-6" id="filter-form">
                             <!-- City / Location -->
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-2">City or area</label>
@@ -62,18 +62,35 @@
                                 <label class="block text-sm font-semibold text-slate-700 mb-2">Sports</label>
                                 <div class="space-y-2">
                                     @php
-                                        $sports = ['Futsal', 'Badminton', 'Basketball', 'Volleyball', 'Tennis'];
+                                        $sports = ['Futsal', 'Badminton', 'Basket', 'Voli', 'Tenis'];
                                         $selectedSports = request('sports', []);
+                                        $otherSports = array_diff((array) $selectedSports, $sports);
+                                        $hasOther = count($otherSports) > 0;
+                                        $otherValue = $hasOther ? reset($otherSports) : '';
                                     @endphp
-                                    @foreach ($sports as $sport)
-                                        <label class="flex items-center gap-2 cursor-pointer group">
-                                            <input type="checkbox" name="sports[]" value="{{ $sport }}"
-                                                class="w-4 h-4 rounded border-slate-300 text-accent-500 focus:ring-accent-500"
-                                                {{ in_array($sport, (array) $selectedSports) ? 'checked' : '' }}>
-                                            <span
-                                                class="text-sm text-slate-600 group-hover:text-slate-800">{{ $sport }}</span>
+                                    <div x-data="{ showOther: {{ $hasOther ? 'true' : 'false' }} }">
+                                        @foreach ($sports as $sport)
+                                            <label class="flex items-center gap-2 cursor-pointer group mb-2">
+                                                <input type="checkbox" name="sports[]" value="{{ $sport }}"
+                                                    class="w-4 h-4 rounded border-slate-300 text-accent-500 focus:ring-accent-500"
+                                                    {{ in_array($sport, (array) $selectedSports) ? 'checked' : '' }}>
+                                                <span
+                                                    class="text-sm text-slate-600 group-hover:text-slate-800">{{ $sport }}</span>
+                                            </label>
+                                        @endforeach
+                                        
+                                        <label class="flex items-center gap-2 cursor-pointer group mt-2">
+                                            <input type="checkbox" x-model="showOther" 
+                                                class="w-4 h-4 rounded border-slate-300 text-accent-500 focus:ring-accent-500">
+                                            <span class="text-sm text-slate-600 group-hover:text-slate-800">Lainnya (Tulis Sendiri)</span>
                                         </label>
-                                    @endforeach
+                                        <div x-show="showOther" class="mt-2 pl-6">
+                                            <input type="text" :name="showOther ? 'sports[]' : ''" value="{{ $otherValue }}"
+                                                class="w-full text-sm py-1.5 px-3 bg-white/80 border border-slate-200 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition" 
+                                                placeholder="Ketik tipe olahraga..." 
+                                                :disabled="!showOther">
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -128,12 +145,12 @@
                         </p>
                         <div class="flex items-center gap-2">
                             <label class="text-sm text-slate-500">Urutkan:</label>
-                            <select
+                            <select name="sort" form="filter-form" onchange="document.getElementById('filter-form').submit()"
                                 class="text-sm border border-slate-200 bg-white/80 backdrop-blur-sm shadow-sm rounded-xl px-3 py-2 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none">
-                                <option>Harga Terendah</option>
-                                <option>Harga Tertinggi</option>
-                                <option>Terpopuler</option>
-                                <option>Terbaru</option>
+                                <option value="Harga Terendah" {{ request('sort') == 'Harga Terendah' ? 'selected' : '' }}>Harga Terendah</option>
+                                <option value="Harga Tertinggi" {{ request('sort') == 'Harga Tertinggi' ? 'selected' : '' }}>Harga Tertinggi</option>
+                                <option value="Terpopuler" {{ request('sort') == 'Terpopuler' ? 'selected' : '' }}>Terpopuler</option>
+                                <option value="Terbaru" {{ request('sort') == 'Terbaru' ? 'selected' : '' }}>Terbaru</option>
                             </select>
                         </div>
                     </div>

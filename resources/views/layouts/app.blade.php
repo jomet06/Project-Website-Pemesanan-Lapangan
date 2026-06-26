@@ -107,11 +107,11 @@
                         <div class="relative" x-data="{ open: false }">
                             <button @click="open = !open" @click.away="open = false" class="flex items-center gap-3 focus:outline-none pl-2 border-l border-slate-200">
                                 <div class="text-right hidden lg:block">
-                                    <p class="text-sm font-bold text-slate-800 leading-tight">{{ Auth::user()->name_users }}</p>
+                                    <p class="text-sm font-bold text-slate-800 leading-tight">{{ Auth::user()->username }}</p>
                                     <p class="text-xs text-slate-500 font-medium capitalize">{{ Auth::user()->role }}</p>
                                 </div>
                                 <div class="w-9 h-9 rounded-full border-2 border-primary-100 overflow-hidden bg-slate-200">
-                                    <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name_users) }}&background=1d4ed8&color=fff&bold=true" class="w-full h-full object-cover">
+                                    <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->username) }}&background=1d4ed8&color=fff&bold=true" class="w-full h-full object-cover">
                                 </div>
                                 <i class="fas fa-chevron-down text-slate-400 text-xs transition-transform duration-200" :class="{'rotate-180': open}"></i>
                             </button>

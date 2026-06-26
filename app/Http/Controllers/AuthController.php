@@ -21,18 +21,35 @@ class AuthController extends Controller
             
             // Redirect sesuai role
             if ($user->role === 'admin') {
-                return redirect()->route('admin.dashboard')->with('success', 'Berhasil masuk sebagai Admin: ' . $user->name_users);
+                return redirect()->route('admin.dashboard')->with('success', 'Berhasil masuk sebagai Admin: ' . $user->username);
             }
             
-            return redirect()->route('home')->with('success', 'Selamat datang kembali, ' . $user->name_users . '!');
+            return redirect()->route('home')->with('success', 'Selamat datang kembali, ' . $user->username . '!');
         }
 
         return redirect()->route('home')->with('error', 'Gagal login. Belum ada data user di database (Jalankan seeder).');
     }
 
-    public function registerSubmit()
+    public function registerSubmit(Request $request)
     {
-        return redirect()->route('login')->with('success', 'Pendaftaran prototipe berhasil! Silakan login.');
+        $request->validate([
+            'name_users' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users',
+            'email' => 'required|string|email|max:255|unique:users',
+            'phone' => 'required|string|max:20',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = User::create([
+            'name_users' => $request->name_users,
+            'username' => $request->username,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'password' => bcrypt($request->password),
+            'role' => 'user',
+        ]);
+
+        return redirect()->route('login')->with('success', 'Pendaftaran berhasil! Silakan login.');
     }
 
     public function forgotPassword()
