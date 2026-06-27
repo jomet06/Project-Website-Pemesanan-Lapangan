@@ -138,4 +138,25 @@ class ScheduleController extends Controller
 
         return redirect()->route('admin.schedules')->with('success', "Status jadwal diubah menjadi $newStatus.");
     }
+
+    public function destroyAll(Request $request)
+    {
+        $query = Schedule::query();
+        
+        if ($request->has('filter_start_date') && $request->filter_start_date && $request->has('filter_end_date') && $request->filter_end_date) {
+            $query->whereBetween('date', [$request->filter_start_date, $request->filter_end_date]);
+        } elseif ($request->has('filter_date') && $request->filter_date) {
+            $query->whereDate('date', $request->filter_date);
+        } else {
+            $query->whereDate('date', '>=', Carbon::today());
+        }
+
+        if ($request->has('filter_field_id') && $request->filter_field_id) {
+            $query->where('field_id', $request->filter_field_id);
+        }
+
+        $deleted = $query->where('status_schedules', '!=', 'Booked')->delete();
+
+        return back()->with('success', $deleted . ' jadwal berhasil dihapus (Jadwal yang sudah di-booking tidak ikut terhapus).');
+    }
 }

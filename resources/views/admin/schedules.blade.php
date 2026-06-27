@@ -86,26 +86,37 @@
 <div class="bg-white rounded-xl border border-slate-200 shadow-sm">
     <div class="flex flex-col md:flex-row items-start md:items-center justify-between px-6 py-4 border-b border-slate-100 gap-4">
         <h3 class="font-bold text-slate-800">Daftar Jadwal</h3>
-        <form action="{{ route('admin.schedules') }}" method="GET" class="flex flex-col lg:flex-row items-center gap-2 w-full md:w-auto">
-            <select name="filter_field_id" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-accent-500 outline-none w-full sm:w-auto">
-                <option value="">Semua Lapangan</option>
-                @foreach($fields as $field)
-                    <option value="{{ $field->id_fields }}" {{ request('filter_field_id') == $field->id_fields ? 'selected' : '' }}>
-                        {{ $field->name_fields }}
-                    </option>
-                @endforeach
-            </select>
-            <div class="flex items-center gap-2 w-full sm:w-auto">
-                <input type="date" name="filter_start_date" 
-                       class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-accent-500 outline-none w-full"
-                       value="{{ request('filter_start_date', \Carbon\Carbon::today()->toDateString()) }}">
-                <span class="text-slate-400 font-medium text-sm text-center">s/d</span>
-                <input type="date" name="filter_end_date" 
-                       class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-accent-500 outline-none w-full"
-                       value="{{ request('filter_end_date', \Carbon\Carbon::today()->toDateString()) }}">
-            </div>
-            <button type="submit" class="bg-primary-500 hover:bg-primary-600 text-white text-sm font-bold px-4 py-1.5 rounded-lg transition w-full sm:w-auto">Filter</button>
-        </form>
+        <div class="flex flex-col lg:flex-row items-center gap-4 w-full md:w-auto">
+            <form action="{{ route('admin.schedules') }}" method="GET" class="flex flex-col lg:flex-row items-center gap-2 w-full md:w-auto">
+                <select name="filter_field_id" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-accent-500 outline-none w-full sm:w-auto">
+                    <option value="">Semua Lapangan</option>
+                    @foreach($fields as $field)
+                        <option value="{{ $field->id_fields }}" {{ request('filter_field_id') == $field->id_fields ? 'selected' : '' }}>
+                            {{ $field->name_fields }}
+                        </option>
+                    @endforeach
+                </select>
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <input type="date" name="filter_start_date" 
+                           class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-accent-500 outline-none w-full"
+                           value="{{ request('filter_start_date', \Carbon\Carbon::today()->toDateString()) }}">
+                    <span class="text-slate-400 font-medium text-sm text-center">s/d</span>
+                    <input type="date" name="filter_end_date" 
+                           class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-accent-500 outline-none w-full"
+                           value="{{ request('filter_end_date', \Carbon\Carbon::today()->toDateString()) }}">
+                </div>
+                <button type="submit" class="bg-primary-500 hover:bg-primary-600 text-white text-sm font-bold px-4 py-1.5 rounded-lg transition w-full sm:w-auto">Filter</button>
+            </form>
+            <form action="{{ route('admin.schedules.destroyAll') }}" method="POST" onsubmit="return confirm('Hapus semua jadwal kosong (Available/Locked) pada filter ini?')" class="w-full sm:w-auto">
+                @csrf
+                <input type="hidden" name="filter_field_id" value="{{ request('filter_field_id') }}">
+                <input type="hidden" name="filter_start_date" value="{{ request('filter_start_date', \Carbon\Carbon::today()->toDateString()) }}">
+                <input type="hidden" name="filter_end_date" value="{{ request('filter_end_date', \Carbon\Carbon::today()->toDateString()) }}">
+                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white text-sm font-bold px-4 py-1.5 rounded-lg transition w-full sm:w-auto flex items-center justify-center gap-2">
+                    <i class="fas fa-trash"></i> Hapus Semua
+                </button>
+            </form>
+        </div>
     </div>
     <div class="overflow-x-auto">
         <table class="w-full" id="schedulesTable">
@@ -140,34 +151,39 @@
                         @endif
                     </td>
                     <td class="py-4 px-6 text-sm">
-                        @if($schedule->booking)
-                            <span class="font-medium text-slate-700">{{ $schedule->booking->user->name_users ?? '-' }}</span>
-                            <br><span class="text-xs text-slate-400">{{ $schedule->booking->booking_code }}</span>
+                        @if($schedule->status_schedules === 'Booked')
+                            @php
+                                $booking = \App\Models\Booking::where('schedule_id', $schedule->id_schedules)
+                                    ->orWhereJsonContains('schedule_ids', $schedule->id_schedules)
+                                    ->latest()->first();
+                            @endphp
+                            @if($booking)
+                                <span class="font-medium text-slate-700">{{ $booking->user->name_users ?? 'Unknown' }}</span>
+                                <br><span class="text-xs text-slate-400">{{ $booking->booking_code }}</span>
+                            @else
+                                <span class="text-slate-400 italic">Booked</span>
+                            @endif
                         @else
                             <span class="text-slate-400 italic">-</span>
                         @endif
                     </td>
                     <td class="py-4 px-6">
                         <div class="flex items-center justify-center gap-2">
-                            @if(!$schedule->booking || $schedule->booking->status_bookings === 'Cancelled')
-                                <form action="{{ route('admin.schedules.toggle', $schedule->id_schedules) }}" method="POST" class="inline">
-                                    @csrf
-                                    <button type="submit" 
-                                            class="w-8 h-8 {{ $schedule->status_schedules === 'Available' ? 'bg-amber-50 hover:bg-amber-100 text-amber-600' : 'bg-green-50 hover:bg-green-100 text-green-600' }} rounded-lg transition flex items-center justify-center"
-                                            title="{{ $schedule->status_schedules === 'Available' ? 'Lock' : 'Unlock' }}">
-                                        <i class="fas fa-{{ $schedule->status_schedules === 'Available' ? 'lock' : 'lock-open' }} text-xs"></i>
-                                    </button>
-                                </form>
-                                <form action="{{ route('admin.schedules.destroy', $schedule->id_schedules) }}" method="POST" class="inline" onsubmit="return confirm('Hapus jadwal ini?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="w-8 h-8 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition flex items-center justify-center" title="Delete">
-                                        <i class="fas fa-trash text-xs"></i>
-                                    </button>
-                                </form>
-                            @else
-                                <span class="text-xs text-slate-400 italic">Terbooking</span>
-                            @endif
+                            <form action="{{ route('admin.schedules.toggle', $schedule->id_schedules) }}" method="POST" class="inline">
+                                @csrf
+                                <button type="submit" 
+                                        class="w-8 h-8 {{ $schedule->status_schedules === 'Available' ? 'bg-amber-50 hover:bg-amber-100 text-amber-600' : 'bg-green-50 hover:bg-green-100 text-green-600' }} rounded-lg transition flex items-center justify-center"
+                                        title="{{ $schedule->status_schedules === 'Available' ? 'Lock' : 'Unlock' }}">
+                                    <i class="fas fa-{{ $schedule->status_schedules === 'Available' ? 'lock' : 'lock-open' }} text-xs"></i>
+                                </button>
+                            </form>
+                            <form action="{{ route('admin.schedules.destroy', $schedule->id_schedules) }}" method="POST" class="inline" onsubmit="return confirm('Hapus jadwal ini?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="w-8 h-8 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition flex items-center justify-center" title="Delete">
+                                    <i class="fas fa-trash text-xs"></i>
+                                </button>
+                            </form>
                         </div>
                     </td>
                 </tr>

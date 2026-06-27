@@ -97,13 +97,21 @@
                     <div>
                         <p class="text-sm text-slate-500 mb-1">Status Booking</p>
 
-                        @if($booking->status_bookings === 'Paid')
+                        @if($booking->computed_status === 'Paid')
                             <span class="inline-flex px-3 py-1 bg-green-50 text-green-600 rounded-full text-sm font-bold border border-green-200">
                                 Paid
                             </span>
-                        @elseif($booking->status_bookings === 'Pending')
+                        @elseif($booking->computed_status === 'Done')
+                            <span class="inline-flex px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-sm font-bold border border-slate-200">
+                                Done
+                            </span>
+                        @elseif($booking->computed_status === 'Waiting for Payment')
                             <span class="inline-flex px-3 py-1 bg-amber-50 text-amber-600 rounded-full text-sm font-bold border border-amber-200">
                                 Pending
+                            </span>
+                        @elseif($booking->computed_status === 'Rescheduled')
+                            <span class="inline-flex px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm font-bold border border-blue-200">
+                                Rescheduled
                             </span>
                         @else
                             <span class="inline-flex px-3 py-1 bg-red-50 text-red-600 rounded-full text-sm font-bold border border-red-200">
@@ -116,7 +124,11 @@
                     <div>
                         <p class="text-sm text-slate-500 mb-1">Metode Pembayaran</p>
                         <p class="font-semibold text-slate-800">
-                            {{ $booking->payment->payment_method ?? 'Belum Dibayar' }}
+                            @if($booking->computed_status === 'Paid' || $booking->computed_status === 'Done')
+                                {{ $booking->payment->payment_method ?? 'Otomatis' }}
+                            @else
+                                {{ $booking->payment->payment_method ?? 'Belum Dibayar' }}
+                            @endif
                         </p>
                     </div>
 
@@ -144,7 +156,7 @@
                         Kembali
                     </a>
 
-                    @if($booking->status_bookings === 'Paid')
+                    @if($booking->computed_status === 'Paid' || $booking->computed_status === 'Done')
                         <a href="{{ route('booking.invoice', $booking->id_bookings) }}"
                            class="px-5 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-semibold transition">
                             <i class="fas fa-file-invoice mr-2"></i>

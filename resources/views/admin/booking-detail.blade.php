@@ -28,13 +28,21 @@
                     <h2 class="text-lg font-bold text-slate-800">Informasi Booking</h2>
                     <p class="text-sm text-slate-500 mt-1">Detail lengkap pemesanan lapangan</p>
                 </div>
-                @if($booking->status_bookings === 'Paid')
+                @if($booking->computed_status === 'Paid')
                     <span class="px-4 py-2 bg-green-100 text-green-700 text-sm font-bold rounded-full border border-green-200 flex items-center gap-2">
                         <i class="fas fa-check-circle"></i> PAID
                     </span>
-                @elseif($booking->status_bookings === 'Pending')
+                @elseif($booking->computed_status === 'Done')
+                    <span class="px-4 py-2 bg-slate-200 text-slate-700 text-sm font-bold rounded-full border border-slate-300 flex items-center gap-2">
+                        <i class="fas fa-check-double"></i> DONE
+                    </span>
+                @elseif($booking->computed_status === 'Waiting for Payment')
                     <span class="px-4 py-2 bg-amber-100 text-amber-700 text-sm font-bold rounded-full border border-amber-200 flex items-center gap-2">
                         <i class="fas fa-clock"></i> PENDING
+                    </span>
+                @elseif($booking->computed_status === 'Rescheduled')
+                    <span class="px-4 py-2 bg-blue-100 text-blue-700 text-sm font-bold rounded-full border border-blue-200 flex items-center gap-2">
+                        <i class="fas fa-calendar-alt"></i> RESCHEDULED
                     </span>
                 @else
                     <span class="px-4 py-2 bg-red-100 text-red-700 text-sm font-bold rounded-full border border-red-200 flex items-center gap-2">
@@ -189,12 +197,12 @@
                 <a href="{{ route('admin.bookings') }}" class="bg-white border border-slate-200 text-slate-600 font-bold px-5 py-2.5 rounded-lg hover:bg-slate-50 transition shadow-sm flex items-center gap-2 text-sm">
                     <i class="fas fa-arrow-left"></i> Kembali
                 </a>
-                @if($booking->status_bookings === 'Paid')
+                @if($booking->computed_status === 'Paid' || $booking->computed_status === 'Done')
                     <a href="{{ route('admin.bookings.invoice', $booking->id_bookings) }}" target="_blank" class="bg-primary-600 hover:bg-primary-700 text-white font-bold px-5 py-2.5 rounded-lg transition shadow-sm flex items-center gap-2 text-sm">
                         <i class="fas fa-file-invoice"></i> Lihat Invoice
                     </a>
                 @endif
-                @if($booking->status_bookings === 'Pending')
+                @if($booking->computed_status === 'Waiting for Payment')
                     <form action="{{ route('admin.bookings.forcePaid', $booking->id_bookings) }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin memaksa booking ini menjadi Paid?')">
                         @csrf
                         <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold px-5 py-2.5 rounded-lg transition shadow-sm flex items-center gap-2 text-sm">

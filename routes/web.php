@@ -34,6 +34,7 @@ Route::get('/fields/{field}', [FieldController::class, 'show'])->name('fields.sh
 // --- Booking Actions & User Dashboard ---
 Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
 Route::post('/booking/{id}/cancel', [BookingController::class, 'cancel'])->name('booking.cancel');
+Route::post('/booking/{id}/reschedule', [BookingController::class, 'reschedule'])->name('booking.reschedule');
 Route::get('/booking/{id}/checkout', [BookingController::class, 'checkout'])->name('booking.checkout');
 Route::post('/midtrans/callback', [PaymentController::class, 'callback']);
 Route::get('/user/history', [BookingController::class, 'history'])->name('user.history');
@@ -74,6 +75,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     Route::get('/schedules', [App\Http\Controllers\Admin\ScheduleController::class, 'index'])->name('schedules');
     Route::post('/schedules', [App\Http\Controllers\Admin\ScheduleController::class, 'store'])->name('schedules.store');
     Route::put('/schedules/{id}', [App\Http\Controllers\Admin\ScheduleController::class, 'update'])->name('schedules.update');
+    Route::post('/schedules/destroy-all', [App\Http\Controllers\Admin\ScheduleController::class, 'destroyAll'])->name('schedules.destroyAll');
     Route::delete('/schedules/{id}', [App\Http\Controllers\Admin\ScheduleController::class, 'destroy'])->name('schedules.destroy');
     Route::post('/schedules/{id}/toggle', [App\Http\Controllers\Admin\ScheduleController::class, 'toggleStatus'])->name('schedules.toggle');
 });
+
+Route::post('/booking/cancel-reschedule', function() {
+    session()->forget('reschedule_booking_id');
+    return redirect()->route('user.history')->with('info', 'Reschedule dibatalkan.');
+})->name('booking.cancel-reschedule');

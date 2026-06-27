@@ -108,10 +108,14 @@
                         <td class="py-3 px-6 text-sm text-slate-600">{{ $booking->schedule->field->name_fields ?? '-' }}</td>
                         <td class="py-3 px-6 text-sm text-slate-600">{{ $booking->user->name_users ?? '-' }}</td>
                         <td class="py-3 px-6">
-                            @if($booking->status_bookings === 'Paid')
+                            @if($booking->computed_status === 'Paid')
                                 <span class="px-2.5 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">Paid</span>
-                            @elseif($booking->status_bookings === 'Pending')
+                            @elseif($booking->computed_status === 'Done')
+                                <span class="px-2.5 py-1 bg-slate-200 text-slate-700 text-xs font-bold rounded-full">Done</span>
+                            @elseif($booking->computed_status === 'Waiting for Payment')
                                 <span class="px-2.5 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-full">Pending</span>
+                            @elseif($booking->computed_status === 'Rescheduled')
+                                <span class="px-2.5 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">Rescheduled</span>
                             @else
                                 <span class="px-2.5 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full">Cancelled</span>
                             @endif

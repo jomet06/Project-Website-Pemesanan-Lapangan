@@ -9,7 +9,9 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $fields = Field::with('facilities')->latest()->take(3)->get();
-        return view('layouts.welcome', compact('fields'));
+        $sports = Field::selectRaw('type_fields, count(*) as count, MIN(image) as image, MIN(description) as description')
+            ->groupBy('type_fields')
+            ->get();
+        return view('layouts.welcome', compact('sports'));
     }
 }

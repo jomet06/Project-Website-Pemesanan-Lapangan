@@ -64,53 +64,51 @@
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <!-- Large Card -->
-            <a href="{{ route('fields.index', ['sports' => 'Futsal']) }}" class="group relative rounded-3xl overflow-hidden md:col-span-2 aspect-[2/1] lg:aspect-auto lg:h-[500px] shadow-lg hover:shadow-2xl transition-all duration-500 block">
-                <img src="https://images.unsplash.com/photo-1524015368236-bbf6f72545b6?auto=format&fit=crop&q=80&w=1000" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-700 ease-in-out">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500"></div>
-                
-                <div class="absolute top-6 right-6 bg-white/20 backdrop-blur-md rounded-full px-4 py-2 border border-white/30">
-                    <span class="text-white font-semibold text-sm flex items-center gap-2"><i class="fas fa-fire text-accent-400"></i> Popular</span>
-                </div>
+            @if($sports->count() > 0)
+                @php $first = $sports->first(); @endphp
+                <!-- Large Card -->
+                <a href="{{ route('fields.index', ['sports' => $first->type_fields]) }}" class="group relative rounded-3xl overflow-hidden md:col-span-2 aspect-[2/1] lg:aspect-auto lg:h-full min-h-[400px] shadow-lg hover:shadow-2xl transition-all duration-500 block">
+                    <img src="{{ $first->image ? asset('storage/' . $first->image) : 'https://images.unsplash.com/photo-1524015368236-bbf6f72545b6?auto=format&fit=crop&q=80&w=1000' }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-700 ease-in-out">
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    
+                    <div class="absolute top-6 right-6 bg-white/20 backdrop-blur-md rounded-full px-4 py-2 border border-white/30 z-10">
+                        <span class="text-white font-semibold text-sm flex items-center gap-2"><i class="fas fa-fire text-accent-400"></i> Popular</span>
+                    </div>
 
-                <div class="absolute bottom-8 left-8 right-8 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                    <div class="w-12 h-12 bg-accent-500 text-white rounded-2xl flex items-center justify-center text-xl mb-4 shadow-lg group-hover:-translate-y-2 transition-transform duration-500">
-                        <i class="far fa-futbol"></i>
+                    <div class="absolute bottom-8 left-8 right-8 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 z-10">
+                        <div class="w-12 h-12 bg-accent-500 text-white rounded-2xl flex items-center justify-center text-xl mb-4 shadow-lg group-hover:-translate-y-2 transition-transform duration-500">
+                            @if(strtolower($first->type_fields) == 'futsal') <i class="far fa-futbol"></i>
+                            @elseif(strtolower($first->type_fields) == 'basket' || strtolower($first->type_fields) == 'basketball') <i class="fas fa-basketball-ball"></i>
+                            @elseif(strtolower($first->type_fields) == 'badminton') <i class="fas fa-volleyball-ball"></i>
+                            @else <i class="fas fa-running"></i> @endif
+                        </div>
+                        <h3 class="text-3xl font-bold text-white mb-2">{{ $first->type_fields }}</h3>
+                        <p class="text-slate-300 text-base mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">{{ Str::limit($first->description ?? 'Experience pro-level turf and lighting. Perfect for your matches.', 100) }}</p>
+                        <span class="inline-flex items-center text-accent-400 font-bold text-sm group-hover:text-accent-300">
+                            Explore {{ $first->count }} Courts <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-2 transition-transform"></i>
+                        </span>
                     </div>
-                    <h3 class="text-3xl font-bold text-white mb-2">Futsal Pitches</h3>
-                    <p class="text-slate-300 text-base mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">Experience pro-level turf and lighting. Perfect for 5v5 matches and tournaments.</p>
-                    <span class="inline-flex items-center text-accent-400 font-bold text-sm group-hover:text-accent-300">
-                        Explore 120+ Pitches <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-2 transition-transform"></i>
-                    </span>
-                </div>
-            </a>
+                </a>
+            @endif
             
-            <div class="flex flex-col gap-8 lg:h-[500px]">
-                <!-- Small Card 1 -->
-                <a href="{{ route('fields.index', ['sports' => 'Basket']) }}" class="group relative rounded-3xl overflow-hidden flex-1 shadow-lg hover:shadow-2xl transition-all duration-500 block">
-                    <img src="https://images.unsplash.com/photo-1504450758481-7338eba7524a?auto=format&fit=crop&q=80&w=800" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-700 ease-in-out">
-                    <div class="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <div class="absolute bottom-6 left-6 right-6 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
-                        <h3 class="text-2xl font-bold text-white mb-1">Basketball</h3>
-                        <p class="text-slate-300 text-sm mb-3">Premium hardwood courts.</p>
-                        <span class="inline-flex items-center text-accent-400 font-bold text-xs">
-                            45 Courts <i class="fas fa-arrow-right ml-1 transform group-hover:translate-x-1 transition-transform"></i>
-                        </span>
-                    </div>
-                </a>
-                <!-- Small Card 2 -->
-                <a href="{{ route('fields.index', ['sports' => 'Badminton']) }}" class="group relative rounded-3xl overflow-hidden flex-1 shadow-lg hover:shadow-2xl transition-all duration-500 block">
-                    <img src="https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&q=80&w=800" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-700 ease-in-out">
-                    <div class="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <div class="absolute bottom-6 left-6 right-6 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
-                        <h3 class="text-2xl font-bold text-white mb-1">Badminton</h3>
-                        <p class="text-slate-300 text-sm mb-3">Professional BWF standard mats.</p>
-                        <span class="inline-flex items-center text-accent-400 font-bold text-xs">
-                            80 Courts <i class="fas fa-arrow-right ml-1 transform group-hover:translate-x-1 transition-transform"></i>
-                        </span>
-                    </div>
-                </a>
+            @if($sports->count() > 1)
+            <div class="flex flex-col gap-8 h-full">
+                @foreach($sports->skip(1) as $sport)
+                    <!-- Small Card -->
+                    <a href="{{ route('fields.index', ['sports' => $sport->type_fields]) }}" class="group relative rounded-3xl overflow-hidden flex-1 shadow-lg hover:shadow-2xl transition-all duration-500 block min-h-[250px]">
+                        <img src="{{ $sport->image ? asset('storage/' . $sport->image) : 'https://images.unsplash.com/photo-1504450758481-7338eba7524a?auto=format&fit=crop&q=80&w=800' }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-700 ease-in-out">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div class="absolute bottom-6 left-6 right-6 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500 z-10">
+                            <h3 class="text-2xl font-bold text-white mb-1">{{ $sport->type_fields }}</h3>
+                            <p class="text-slate-300 text-sm mb-3">{{ Str::limit($sport->description ?? 'Premium courts for your game.', 50) }}</p>
+                            <span class="inline-flex items-center text-accent-400 font-bold text-xs">
+                                {{ $sport->count }} Courts <i class="fas fa-arrow-right ml-1 transform group-hover:translate-x-1 transition-transform"></i>
+                            </span>
+                        </div>
+                    </a>
+                @endforeach
             </div>
+            @endif
         </div>
     </div>
 </section>

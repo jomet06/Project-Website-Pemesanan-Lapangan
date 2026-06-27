@@ -71,7 +71,37 @@
             <button @click="show = false" class="text-slate-400 hover:text-slate-600 transition"><i class="fas fa-times"></i></button>
         </div>
         @endif
+
+        @if(session('info'))
+        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 6000)"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 -translate-y-4 scale-95"
+             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 scale-100"
+             x-transition:leave-end="opacity-0 scale-95"
+             class="bg-white border-l-4 border-blue-500 shadow-2xl rounded-xl p-4 flex items-start gap-3 pointer-events-auto">
+            <div class="bg-blue-100 rounded-full p-1.5 flex-shrink-0 mt-0.5">
+                <i class="fas fa-info-circle text-blue-600 text-sm"></i>
+            </div>
+            <div class="flex-1">
+                <h4 class="text-sm font-bold text-slate-800">Info</h4>
+                <p class="text-sm text-slate-600 mt-0.5">{{ session('info') }}</p>
+            </div>
+            <button @click="show = false" class="text-slate-400 hover:text-slate-600 transition"><i class="fas fa-times"></i></button>
+        </div>
+        @endif
     </div>
+
+    @if(session()->has('reschedule_booking_id'))
+    <div class="bg-blue-600 text-white px-4 py-2 flex items-center justify-center gap-4 text-sm font-medium z-50">
+        <span>Anda sedang dalam mode Reschedule. Silakan pilih jadwal pengganti.</span>
+        <form action="{{ route('booking.cancel-reschedule') }}" method="POST" class="inline">
+            @csrf
+            <button type="submit" class="bg-white/20 hover:bg-white/30 px-3 py-1 rounded text-white text-xs font-bold transition">Batal Reschedule</button>
+        </form>
+    </div>
+    @endif
 
     @if(!request()->routeIs('login'))
     <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">

@@ -54,4 +54,34 @@ class Booking extends Model
     {
         return $this->hasOne(Payment::class, 'booking_id', 'id_bookings');
     }
+
+    public function getComputedStatusAttribute()
+    {
+        if ($this->status_bookings === 'Pending') {
+            return 'Waiting for Payment';
+        } elseif ($this->status_bookings === 'Cancelled') {
+            if ($this->cancel_reason === 'Rescheduled') {
+                return 'Rescheduled';
+            }
+            return 'Canceled';
+        } elseif ($this->status_bookings === 'Paid') {
+            $playDate = \Carbon\Carbon::parse($this->play_date);
+            $schedules = $this->getSchedulesList();
+            
+            if ($schedules->isNotEmpty()) {
+                $lastSchedule = $schedules->last();
+                $endDateTime = \Carbon\Carbon::parse($this->play_date . ' ' . $lastSchedule->end_time);
+                if (now()->greaterThan($endDateTime)) {
+                    return 'Done';
+                }
+            } else {
+                if (now()->startOfDay()->greaterThan($playDate)) {
+                    return 'Done';
+                }
+            }
+            return 'Paid';
+        }
+        
+        return $this->status_bookings;
+    }
 }

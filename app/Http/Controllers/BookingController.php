@@ -13,7 +13,7 @@ use Carbon\Carbon;
 
 class BookingController extends Controller
 {
-    public function history()
+    public function history(Request $request)
     {
         // Auto expire booking pending > 30 menit
         $expiredBookings = Booking::query()
@@ -42,13 +42,32 @@ class BookingController extends Controller
             $this->freeSchedules($booking);
         }
 
-        $bookings = Booking::query()
+        $tab = $request->query('tab', 'all');
+
+        $query = Booking::query()
             ->with(['schedule.field', 'payment'])
             ->where('user_id', Auth::id())
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('user.history', compact('bookings'));
+        $bookings = $query->map(function($booking) {
+            $computed = $booking->computed_status;
+            
+            if ($computed === 'Waiting for Payment') $booking->custom_status = 'waiting';
+            elseif ($computed === 'Rescheduled') $booking->custom_status = 'reschedule';
+            elseif ($computed === 'Canceled') $booking->custom_status = 'canceled';
+            elseif ($computed === 'Done') $booking->custom_status = 'done';
+            elseif ($computed === 'Paid') $booking->custom_status = 'paid';
+            else $booking->custom_status = 'unknown';
+
+            return $booking;
+        });
+
+        if ($tab !== 'all') {
+            $bookings = $bookings->filter(fn($b) => $b->custom_status === $tab);
+        }
+
+        return view('user.history', compact('bookings', 'tab'));
     }
 
     public function store(Request $request)
@@ -89,6 +108,47 @@ class BookingController extends Controller
         }
 
         $firstSchedule = $schedules->first();
+        $rescheduleId = session('reschedule_booking_id');
+
+        if ($rescheduleId) {
+            $oldBooking = Booking::findOrFail($rescheduleId);
+            
+            if ($totalPrice > $oldBooking->total_price) {
+                return back()->with('error', 'Durasi jadwal baru melebihi batas reschedule Anda. Pilih durasi yang sama atau lebih sedikit (Rp ' . number_format($oldBooking->total_price, 0, ',', '.') . ').');
+            }
+
+            $bookingCode = '#AC-RES-' . strtoupper(Str::random(4));
+            $booking = Booking::create([
+                'user_id' => Auth::id(),
+                'schedule_id' => $firstSchedule->id_schedules,
+                'schedule_ids' => $request->schedule_ids,
+                'subcourt_name' => $request->subcourt_name,
+                'booking_code' => $bookingCode,
+                'total_price' => $totalPrice,
+                'status_bookings' => 'Paid',
+                'play_date' => $request->play_date,
+            ]);
+
+            Schedule::whereIn('id_schedules', $request->schedule_ids)
+                ->update(['status_schedules' => 'Booked']);
+
+            if ($oldBooking->payment) {
+                $newPayment = $oldBooking->payment->replicate();
+                $newPayment->booking_id = $booking->id_bookings;
+                $newPayment->midtrans_order_id = $bookingCode . '-' . time();
+                $newPayment->save();
+            }
+
+            $oldBooking->update([
+                'status_bookings' => 'Cancelled',
+                'cancel_reason' => 'Rescheduled'
+            ]);
+            $this->freeSchedules($oldBooking);
+
+            session()->forget('reschedule_booking_id');
+            return redirect()->route('user.history', ['tab' => 'paid'])->with('success_reschedule', 'Jadwal berhasil di-reschedule!');
+        }
+
         $bookingCode = '#AC-' . strtoupper(Str::random(6));
 
         $booking = Booking::query()->create([
@@ -150,7 +210,6 @@ class BookingController extends Controller
             'cancel_reason' => 'required|string|max:255'
         ]);
 
-        // Cegah cancel booking yang sudah dicancel
         if ($booking->status_bookings === 'Cancelled') {
             return back()->with('error', 'Booking ini sudah dibatalkan sebelumnya.');
         }
@@ -161,20 +220,17 @@ class BookingController extends Controller
             Log::error('Cancel freeSchedules error: ' . $e->getMessage(), [
                 'booking_id' => $booking->id_bookings
             ]);
-            // Tetap lanjutkan cancel meskipun free schedules gagal
         }
 
-        // Jika status Pending, boleh cancel kapan saja (tanpa H-3)
         if ($booking->status_bookings === 'Pending') {
             $booking->update([
                 'status_bookings' => 'Cancelled',
                 'cancelled_at' => now(),
                 'cancel_reason' => $request->cancel_reason
             ]);
-            return back()->with('success', 'Booking berhasil dibatalkan.');
+            return back()->with('success_cancel', 'Booking has been canceled.');
         }
 
-        // Jika status Paid, hanya bisa cancel jika masih H-3 atau lebih
         if ($booking->status_bookings === 'Paid') {
             $playDate = Carbon::parse($booking->play_date);
             $today = Carbon::now();
@@ -189,10 +245,37 @@ class BookingController extends Controller
                 'cancelled_at' => now(),
                 'cancel_reason' => $request->cancel_reason
             ]);
-            return back()->with('success', 'Booking berhasil dibatalkan.');
+            return back()->with('success_cancel', 'Booking has been canceled and your money is refunded.');
         }
 
         return back()->with('error', 'Booking tidak dapat dibatalkan.');
+    }
+
+    public function reschedule(Request $request, $id)
+    {
+        $booking = Booking::query()
+                          ->with('schedule.field')
+                          ->where('id_bookings', $id)
+                          ->where('user_id', Auth::id())
+                          ->firstOrFail();
+
+        if ($booking->status_bookings !== 'Paid') {
+            return back()->with('error', 'Hanya booking yang sudah dibayar yang dapat di-reschedule.');
+        }
+
+        $playDate = Carbon::parse($booking->play_date);
+        $today = Carbon::now();
+        $daysDifference = $today->diffInDays($playDate, false);
+
+        if ($daysDifference < 3 && !Carbon::parse($booking->play_date)->isPast()) {
+            return back()->with('error', 'Reschedule gagal. Hanya dapat dilakukan maksimal H-3 sebelum jadwal bermain.');
+        }
+
+        session(['reschedule_booking_id' => $booking->id_bookings]);
+
+        // Redirect to the specific field page so they can pick a new date/time
+        return redirect()->route('fields.show', $booking->schedule->field_id ?? $booking->getSchedulesList()->first()->field_id)
+            ->with('info', 'Pilih jadwal baru. Anda sedang dalam mode Reschedule (Maks Rp ' . number_format($booking->total_price, 0, ',', '.') . ').');
     }
 
     /**
@@ -200,7 +283,6 @@ class BookingController extends Controller
      */
     private function freeSchedules($booking)
     {
-        // Use schedule_ids JSON if available (new bookings), fall back to single schedule_id
         $scheduleIdsToFree = $booking->schedule_ids;
 
         if (!empty($scheduleIdsToFree) && is_array($scheduleIdsToFree)) {
@@ -210,7 +292,6 @@ class BookingController extends Controller
             return;
         }
 
-        // Fallback for old records with only schedule_id
         $schedule = $booking->schedule;
         if (!$schedule || !$schedule->field) {
             return;
@@ -228,9 +309,6 @@ class BookingController extends Controller
             ->pluck('id_schedules');
 
         if ($schedulesToFree->isEmpty()) {
-            Log::warning('FREE SCHEDULES: no schedules found', [
-                'booking' => $booking->id_bookings
-            ]);
             return;
         }
 
@@ -281,5 +359,4 @@ class BookingController extends Controller
 
         return view('user.booking-detail', compact('booking'));
     }
-
 }

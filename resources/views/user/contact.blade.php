@@ -170,7 +170,7 @@
                         </button>
                         <div x-show="active === 2" x-collapse x-cloak>
                             <div class="px-6 pb-5 text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
-                                Yes, you can cancel your booking up to 24 hours before the scheduled time for a full refund. Cancellations made within 24 hours may be subject to a fee. Please check your user dashboard to manage bookings.
+                                Yes, you can cancel your booking up to 3 days (H-3) before the scheduled time for a full refund. Cancellations made within 3 days may be subject to a fee. Please check your user dashboard to manage bookings.
                             </div>
                         </div>
                     </div>
