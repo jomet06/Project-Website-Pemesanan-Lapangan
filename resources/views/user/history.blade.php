@@ -20,9 +20,8 @@
             </div>
         </div>
 
-        <!-- Tabs -->
         <div class="flex overflow-x-auto gap-2 mb-6 hide-scrollbar pb-2">
-            <a href="{{ route('user.history', ['tab' => 'all']) }}" class="px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap {{ $tab === 'all' ? 'bg-primary-600 text-white shadow-sm' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50' }}">Semua</a>
+            <a href="{{ route('user.history', ['tab' => 'all']) }}" class="px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap {{ $tab === 'all' ? 'bg-primary-600 text-white shadow-sm' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50' }}">All</a>
             <a href="{{ route('user.history', ['tab' => 'waiting']) }}" class="px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap {{ $tab === 'waiting' ? 'bg-amber-500 text-white shadow-sm' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50' }}">Waiting for Payment</a>
             <a href="{{ route('user.history', ['tab' => 'paid']) }}" class="px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap {{ $tab === 'paid' ? 'bg-green-500 text-white shadow-sm' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50' }}">Paid</a>
             <a href="{{ route('user.history', ['tab' => 'done']) }}" class="px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap {{ $tab === 'done' ? 'bg-slate-700 text-white shadow-sm' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50' }}">Done</a>
@@ -61,8 +60,8 @@
                             <tr class="hover:bg-slate-50/50 transition group"
                                 x-data="timerComponent({{ $remainingSeconds }})"
                                 x-init="initTimer()">
-                                <td class="py-4 px-6 font-semibold text-slate-700 text-center">{{ $booking->booking_code }}</td>
-                                <td class="py-4 px-6">
+                                <td class="py-4 px-6 font-semibold text-slate-700 text-center whitespace-nowrap">{{ $booking->booking_code }}</td>
+                                <td class="py-4 px-6 whitespace-nowrap">
                                     <div class="flex items-center justify-center gap-3">
                                         <div class="w-8 h-8 rounded-full bg-primary-50 text-primary-600 flex items-center justify-center">
                                             <i class="fas fa-volleyball-ball text-xs"></i>
@@ -70,16 +69,16 @@
                                         <span class="font-semibold text-slate-800">{{ $field->name_fields ?? 'Unknown Field' }}</span>
                                     </div>
                                 </td>
-                                <td class="py-4 px-6 text-slate-600 text-center">
+                                <td class="py-4 px-6 text-slate-600 text-center whitespace-nowrap">
                                     <div class="font-medium">{{ \Carbon\Carbon::parse($booking->play_date)->format('d M Y') }}</div>
                                     @if($schedulesList->isNotEmpty())
-                                        <div class="text-xs text-slate-400 mt-0.5">{{ $schedulesList->map(fn($s) => substr($s->start_time, 0, 5) . ' - ' . substr($s->end_time, 0, 5))->implode(', ') }} ({{ $schedulesList->count() }} jam)</div>
+                                        <div class="text-xs text-slate-400 mt-0.5">{{ $schedulesList->map(fn($s) => substr($s->start_time, 0, 5) . ' - ' . substr($s->end_time, 0, 5))->implode(', ') }} ({{ $schedulesList->count() }} hrs)</div>
                                     @else
-                                        <div class="text-xs text-slate-400 mt-0.5 italic">Jadwal tidak tersedia</div>
+                                        <div class="text-xs text-slate-400 mt-0.5 italic">Schedule unavailable</div>
                                     @endif
                                 </td>
-                                <td class="py-4 px-6 font-bold text-slate-800 text-center">Rp {{ number_format($booking->total_price, 0, ',', '.') }}</td>
-                                <td class="py-4 px-6 text-center">
+                                <td class="py-4 px-6 font-bold text-slate-800 text-center whitespace-nowrap">Rp {{ number_format($booking->total_price, 0, ',', '.') }}</td>
+                                <td class="py-4 px-6 text-center whitespace-nowrap">
                                     @if($booking->custom_status === 'paid')
                                         <span class="px-3 py-1 bg-green-50 text-green-600 text-xs font-bold rounded-full border border-green-200">Paid</span>
                                     @elseif($booking->custom_status === 'done')
@@ -99,14 +98,14 @@
                                         <span class="px-3 py-1 bg-slate-50 text-slate-600 text-xs font-bold rounded-full border border-slate-200">Unknown</span>
                                     @endif
                                 </td>
-                                <td class="py-4 px-6 text-center">
+                                <td class="py-4 px-6 text-center whitespace-nowrap">
                                     @if($booking->custom_status === 'paid' || $booking->custom_status === 'done')
                                         <div class="flex items-center justify-center gap-2">
                                             <a href="{{ route('booking.invoice', $booking->id_bookings) }}" class="bg-primary-50 text-primary-600 hover:bg-primary-100 px-3 py-1.5 rounded-lg text-sm font-semibold transition border border-primary-100 flex items-center gap-1.5">
                                                 <i class="fas fa-file-invoice text-xs"></i> Invoice
                                             </a>
                                             @if($canCancelPaid && $booking->custom_status === 'paid')
-                                                <button type="button" onclick="confirmCancel('{{ route('booking.cancel', $booking->id_bookings) }}')" class="bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded-lg text-sm font-semibold transition border border-red-100">Batal</button>
+                                                <button type="button" onclick="confirmCancel('{{ route('booking.cancel', $booking->id_bookings) }}')" class="bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded-lg text-sm font-semibold transition border border-red-100">Cancel</button>
                                                 <button type="button" onclick="confirmReschedule('{{ route('booking.reschedule', $booking->id_bookings) }}')" class="bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg text-sm font-semibold transition border border-blue-100">Reschedule</button>
                                             @endif
                                             <a href="{{ route('booking.show', $booking->id_bookings) }}"
@@ -118,13 +117,13 @@
                                         <div class="flex items-center justify-center gap-2">
                                             @if($remainingSeconds > 0)
                                                 <button type="button" onclick="confirmCancel('{{ route('booking.cancel', $booking->id_bookings) }}')" class="bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded-lg text-sm font-semibold transition border border-red-100">
-                                                    Batal
+                                                    Cancel
                                                 </button>
                                                 <a href="{{ route('booking.checkout', $booking->id_bookings) }}" class="bg-accent-500 hover:bg-accent-600 text-white px-4 py-1.5 rounded-lg text-sm font-bold transition shadow-sm hover:shadow-md flex items-center gap-1.5">
-                                                    <i class="fas fa-credit-card text-xs"></i> Bayar
+                                                    <i class="fas fa-credit-card text-xs"></i> Pay
                                                 </a>
                                             @else
-                                                <span class="text-xs text-slate-400 font-medium italic">Waktu habis</span>
+                                                <span class="text-xs text-slate-400 font-medium italic">Expired</span>
                                             @endif
                                         </div>
                                     @elseif($booking->custom_status === 'reschedule')
@@ -184,20 +183,20 @@
 
     function confirmCancel(url) {
         Swal.fire({
-            title: 'Batalkan Booking',
-            text: 'Apakah Anda yakin ingin membatalkan booking ini?',
+            title: 'Cancel Booking',
+            text: 'Are you sure you want to cancel this booking?',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#ef4444',
             cancelButtonColor: '#94a3b8',
-            confirmButtonText: 'Ya, Batalkan',
-            cancelButtonText: 'Kembali'
+            confirmButtonText: 'Yes, Cancel',
+            cancelButtonText: 'Back'
         }).then((result) => {
             if (result.isConfirmed) {
                 let form = document.createElement('form');
                 form.method = 'POST';
                 form.action = url;
-                form.innerHTML = `@csrf <input type="hidden" name="cancel_reason" value="Dibatalkan oleh pengguna">`;
+                form.innerHTML = `@csrf <input type="hidden" name="cancel_reason" value="Cancelled by user">`;
                 document.body.appendChild(form);
                 form.submit();
             }
@@ -207,13 +206,13 @@
     function confirmReschedule(url) {
         Swal.fire({
             title: 'Reschedule Booking',
-            text: 'Apakah Anda yakin ingin melakukan reschedule untuk booking ini?',
+            text: 'Are you sure you want to reschedule this booking?',
             icon: 'info',
             showCancelButton: true,
             confirmButtonColor: '#3b82f6',
             cancelButtonColor: '#94a3b8',
-            confirmButtonText: 'Ya, Reschedule',
-            cancelButtonText: 'Kembali'
+            confirmButtonText: 'Yes, Reschedule',
+            cancelButtonText: 'Back'
         }).then((result) => {
             if (result.isConfirmed) {
                 let form = document.createElement('form');

@@ -96,10 +96,20 @@
                 <p class="text-slate-500 mb-8">Fill out the form below and we will get back to you within 24 hours.</p>
                 
                 @if(session('contact_success'))
-                    <div class="mb-8 bg-green-50 border border-green-200 p-4 rounded-2xl flex items-start gap-3 shadow-sm">
-                        <i class="fas fa-check-circle text-green-500 text-lg mt-0.5"></i>
-                        <p class="text-green-800 font-medium">Message sent successfully! We will contact you soon.</p>
-                    </div>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', () => {
+                            Swal.mixin({
+                                toast: true,
+                                position: 'bottom-end',
+                                showConfirmButton: false,
+                                timer: 4000,
+                                timerProgressBar: true
+                            }).fire({
+                                icon: 'success',
+                                title: 'Message sent successfully! We will contact you soon.'
+                            });
+                        });
+                    </script>
                 @endif
 
                 <form action="{{ route('contact.submit') }}" method="POST" class="space-y-5">

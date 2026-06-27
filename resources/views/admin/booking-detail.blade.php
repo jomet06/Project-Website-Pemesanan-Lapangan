@@ -11,7 +11,7 @@
             <div class="flex justify-between items-center">
                 <div>
                     <h1 class="text-2xl font-bold text-white flex items-center gap-2">
-                        <i class="fas fa-ticket-alt"></i> Detail Booking
+                        <i class="fas fa-ticket-alt"></i> Booking Details
                     </h1>
                 </div>
                 <div class="text-right">
@@ -25,8 +25,8 @@
             <!-- Status -->
             <div class="flex justify-between items-start mb-8">
                 <div>
-                    <h2 class="text-lg font-bold text-slate-800">Informasi Booking</h2>
-                    <p class="text-sm text-slate-500 mt-1">Detail lengkap pemesanan lapangan</p>
+                    <h2 class="text-lg font-bold text-slate-800">Booking Information</h2>
+                    <p class="text-sm text-slate-500 mt-1">Complete court booking details</p>
                 </div>
                 @if($booking->computed_status === 'Paid')
                     <span class="px-4 py-2 bg-green-100 text-green-700 text-sm font-bold rounded-full border border-green-200 flex items-center gap-2">
@@ -54,10 +54,10 @@
             <!-- Info Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div class="bg-slate-50 rounded-lg p-5">
-                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Data Pemesan</h3>
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Customer Details</h3>
                     <div class="space-y-2 text-sm">
                         <div class="flex justify-between">
-                            <span class="text-slate-500">Nama</span>
+                            <span class="text-slate-500">Name</span>
                             <span class="font-semibold text-slate-800">{{ $booking->user->name_users ?? $booking->user->username }}</span>
                         </div>
                         <div class="flex justify-between">
@@ -71,14 +71,14 @@
                     </div>
                 </div>
                 <div class="bg-slate-50 rounded-lg p-5">
-                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Detail Booking</h3>
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Booking Details</h3>
                     <div class="space-y-2 text-sm">
                         <div class="flex justify-between">
                             <span class="text-slate-500">Booking Code</span>
                             <span class="font-semibold text-primary-700">{{ $booking->booking_code }}</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-slate-500">Tanggal Booking</span>
+                            <span class="text-slate-500">Booking Date</span>
                             <span class="font-semibold text-slate-800">{{ $booking->created_at->format('d M Y, H:i') }}</span>
                         </div>
                         <div class="flex justify-between">
@@ -91,7 +91,7 @@
 
             <!-- Field Detail -->
             <div class="mb-8">
-                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Detail Lapangan</h3>
+                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Field Details</h3>
                 <div class="bg-slate-50 rounded-lg p-5">
                     <div class="flex items-center gap-4">
                         <div class="w-14 h-14 bg-primary-50 text-primary-600 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -112,22 +112,22 @@
                 $field = $booking->schedule ? $booking->schedule->field : null;
             @endphp
             <div class="mb-8">
-                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Jadwal Sewa</h3>
+                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Rental Schedule</h3>
                 <div class="bg-slate-50 rounded-lg p-5">
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                         <div>
-                            <span class="text-slate-500 block">Tanggal</span>
+                            <span class="text-slate-500 block">Date</span>
                             <span class="font-bold text-slate-800">{{ \Carbon\Carbon::parse($booking->play_date)->format('d M Y') }}</span>
                         </div>
                         <div>
-                            <span class="text-slate-500 block">Waktu</span>
+                            <span class="text-slate-500 block">Time</span>
                             <span class="font-bold text-slate-800">
                                 {{ $schedulesList->map(fn($s) => substr($s->start_time, 0, 5) . ' - ' . substr($s->end_time, 0, 5))->implode(', ') }}
                             </span>
                         </div>
                         <div>
-                            <span class="text-slate-500 block">Durasi</span>
-                            <span class="font-bold text-slate-800">{{ $schedulesList->count() }} Jam</span>
+                            <span class="text-slate-500 block">Duration</span>
+                            <span class="font-bold text-slate-800">{{ $schedulesList->count() }} hrs</span>
                         </div>
                     </div>
                 </div>
@@ -135,25 +135,25 @@
 
             <!-- Payment Detail -->
             <div class="mb-8">
-                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Detail Pembayaran</h3>
+                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Payment Details</h3>
                 <div class="bg-slate-50 rounded-lg p-5">
                     <div class="space-y-3 text-sm">
                         <div class="flex justify-between">
-                            <span class="text-slate-500">Harga per Jam</span>
+                            <span class="text-slate-500">Price per Hour</span>
                             <span class="font-semibold text-slate-800">Rp {{ number_format($field->price_per_hour ?? 0, 0, ',', '.') }}</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-slate-500">Jumlah Jam</span>
-                            <span class="font-semibold text-slate-800">{{ $schedulesList->count() }} Jam</span>
+                            <span class="text-slate-500">Total Hours</span>
+                            <span class="font-semibold text-slate-800">{{ $schedulesList->count() }} hrs</span>
                         </div>
                         @if($booking->payment && $booking->payment->payment_method)
                         <div class="flex justify-between">
-                            <span class="text-slate-500">Metode Pembayaran</span>
+                            <span class="text-slate-500">Payment Method</span>
                             <span class="font-semibold text-slate-800 capitalize">{{ str_replace('_', ' ', $booking->payment->payment_method) }}</span>
                         </div>
                         @endif
                         <div class="flex justify-between">
-                            <span class="text-slate-500">Status Payment</span>
+                            <span class="text-slate-500">Payment Status</span>
                             @if($booking->payment)
                                 <span class="font-semibold capitalize {{ $booking->payment->status_payments === 'settlement' ? 'text-green-600' : ($booking->payment->status_payments === 'pending' ? 'text-amber-600' : 'text-red-600') }}">
                                     {{ $booking->payment->status_payments }}
@@ -164,12 +164,12 @@
                         </div>
                         @if($booking->payment && $booking->payment->paid_at)
                         <div class="flex justify-between">
-                            <span class="text-slate-500">Dibayar Pada</span>
+                            <span class="text-slate-500">Paid At</span>
                             <span class="font-semibold text-slate-800">{{ \Carbon\Carbon::parse($booking->payment->paid_at)->format('d M Y, H:i') }}</span>
                         </div>
                         @endif
                         <div class="border-t border-slate-200 pt-3 flex justify-between">
-                            <span class="font-bold text-slate-800 text-base">Total Pembayaran</span>
+                            <span class="font-bold text-slate-800 text-base">Total Payment</span>
                             <span class="font-extrabold text-accent-600 text-xl">Rp {{ number_format($booking->total_price, 0, ',', '.') }}</span>
                         </div>
                     </div>
@@ -182,10 +182,10 @@
                 <div class="flex items-start gap-3">
                     <i class="fas fa-info-circle text-red-500 mt-0.5"></i>
                     <div>
-                        <p class="font-bold text-red-700 text-sm">Alasan Pembatalan</p>
+                        <p class="font-bold text-red-700 text-sm">Cancellation Reason</p>
                         <p class="text-red-600 text-sm mt-1">{{ $booking->cancel_reason }}</p>
                         @if($booking->cancelled_at)
-                            <p class="text-red-500 text-xs mt-1">Dibatalkan pada: {{ \Carbon\Carbon::parse($booking->cancelled_at)->format('d M Y, H:i') }}</p>
+                            <p class="text-red-500 text-xs mt-1">Cancelled at: {{ \Carbon\Carbon::parse($booking->cancelled_at)->format('d M Y, H:i') }}</p>
                         @endif
                     </div>
                 </div>
@@ -195,24 +195,24 @@
             <!-- Actions -->
             <div class="border-t border-slate-200 pt-6 flex flex-wrap gap-3">
                 <a href="{{ route('admin.bookings') }}" class="bg-white border border-slate-200 text-slate-600 font-bold px-5 py-2.5 rounded-lg hover:bg-slate-50 transition shadow-sm flex items-center gap-2 text-sm">
-                    <i class="fas fa-arrow-left"></i> Kembali
+                    <i class="fas fa-arrow-left"></i> Back
                 </a>
                 @if($booking->computed_status === 'Paid' || $booking->computed_status === 'Done')
                     <a href="{{ route('admin.bookings.invoice', $booking->id_bookings) }}" target="_blank" class="bg-primary-600 hover:bg-primary-700 text-white font-bold px-5 py-2.5 rounded-lg transition shadow-sm flex items-center gap-2 text-sm">
-                        <i class="fas fa-file-invoice"></i> Lihat Invoice
+                        <i class="fas fa-file-invoice"></i> View Invoice
                     </a>
                 @endif
                 @if($booking->computed_status === 'Waiting for Payment')
-                    <form action="{{ route('admin.bookings.forcePaid', $booking->id_bookings) }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin memaksa booking ini menjadi Paid?')">
+                    <form action="{{ route('admin.bookings.forcePaid', $booking->id_bookings) }}" method="POST" class="inline" data-confirm="Are you sure you want to force this booking to Paid?">
                         @csrf
                         <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold px-5 py-2.5 rounded-lg transition shadow-sm flex items-center gap-2 text-sm">
                             <i class="fas fa-check"></i> Force Paid
                         </button>
                     </form>
-                    <form action="{{ route('admin.bookings.cancel', $booking->id_bookings) }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin membatalkan booking ini?')">
+                    <form action="{{ route('admin.bookings.cancel', $booking->id_bookings) }}" method="POST" class="inline" data-confirm="Are you sure you want to cancel this booking?">
                         @csrf
                         <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold px-5 py-2.5 rounded-lg transition shadow-sm flex items-center gap-2 text-sm">
-                            <i class="fas fa-times"></i> Batalkan
+                            <i class="fas fa-times"></i> Cancel
                         </button>
                     </form>
                 @endif

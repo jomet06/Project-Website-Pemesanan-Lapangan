@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" class="scroll-smooth">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,8 +44,83 @@
     
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
 </head>
 <body class="bg-slate-50 font-sans text-slate-800 antialiased">
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'bottom-end',
+                showConfirmButton: false,
+                timer: 4000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
+
+            @if(session('success'))
+                Toast.fire({
+                    icon: 'success',
+                    title: "{{ session('success') }}"
+                });
+            @endif
+
+            @if(session('error'))
+                Toast.fire({
+                    icon: 'error',
+                    title: "{{ session('error') }}"
+                });
+            @endif
+
+            @if(session('info'))
+                Toast.fire({
+                    icon: 'info',
+                    title: "{{ session('info') }}"
+                });
+            @endif
+
+            @if($errors->any())
+                Toast.fire({
+                    icon: 'error',
+                    title: "{{ $errors->first() }}"
+                });
+            @endif
+
+            // Global confirmation handler for forms using data-confirm attribute
+            document.addEventListener('submit', function(e) {
+                const form = e.target;
+                if (form.dataset.confirmed) {
+                    return;
+                }
+                
+                const confirmMessage = form.getAttribute('data-confirm');
+                if (confirmMessage) {
+                    e.preventDefault();
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: confirmMessage,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#1d4ed8',
+                        cancelButtonColor: '#94a3b8',
+                        confirmButtonText: 'Yes, proceed',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.dataset.confirmed = 'true';
+                            form.submit();
+                        }
+                    });
+                }
+            });
+        });
+    </script>
     <div class="flex h-screen overflow-hidden" x-data="{ sidebarOpen: window.innerWidth >= 1024 }">
         
         <!-- Sidebar Overlay (Mobile) -->
@@ -133,7 +208,7 @@
             <div class="p-4 border-t border-primary-800 bg-primary-800/30">
                 <a href="{{ route('home') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-300 hover:bg-primary-800 hover:text-white transition-all duration-200">
                     <i class="fas fa-external-link-alt w-5 text-center text-slate-400"></i>
-                    Lihat Website
+                    View Website
                 </a>
                 <form method="POST" action="{{ route('logout') }}" class="mt-1">
                     @csrf
@@ -195,7 +270,7 @@
 
                             <a href="{{ route('home') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:text-primary-600 transition-colors">
                                 <div class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500"><i class="fas fa-external-link-alt text-xs"></i></div>
-                                Lihat Website
+                                View Website
                             </a>
 
                             <div class="h-px bg-slate-100 my-2"></div>

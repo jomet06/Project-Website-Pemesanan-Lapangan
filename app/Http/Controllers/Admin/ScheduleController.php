@@ -85,10 +85,10 @@ class ScheduleController extends Controller
         }
 
         if ($created > 0) {
-            return redirect()->route('admin.schedules')->with('success', "$created jadwal berhasil ditambahkan.");
+            return redirect()->route('admin.schedules')->with('success', "$created schedules added successfully.");
         }
 
-        return redirect()->route('admin.schedules')->with('info', 'Tidak ada jadwal baru (mungkin sudah ada).');
+        return redirect()->route('admin.schedules')->with('info', 'No new schedules added (they might already exist).');
     }
 
     public function update(Request $request, $id)
@@ -109,7 +109,7 @@ class ScheduleController extends Controller
             'status_schedules' => $request->status_schedules,
         ]);
 
-        return redirect()->route('admin.schedules')->with('success', 'Jadwal berhasil diperbarui.');
+        return redirect()->route('admin.schedules')->with('success', 'Schedule updated successfully.');
     }
 
     public function destroy($id)
@@ -117,12 +117,12 @@ class ScheduleController extends Controller
         $schedule = Schedule::with('booking')->findOrFail($id);
 
         if ($schedule->booking && $schedule->booking->status_bookings === 'Paid') {
-            return back()->with('error', 'Tidak dapat menghapus jadwal yang sudah dibooking dan dibayar.');
+            return back()->with('error', 'Cannot delete a schedule that is already booked and paid.');
         }
 
         $schedule->delete();
 
-        return redirect()->route('admin.schedules')->with('success', 'Jadwal berhasil dihapus.');
+        return redirect()->route('admin.schedules')->with('success', 'Schedule deleted successfully.');
     }
 
     public function toggleStatus($id)
@@ -130,13 +130,13 @@ class ScheduleController extends Controller
         $schedule = Schedule::with('booking')->findOrFail($id);
 
         if ($schedule->booking && $schedule->booking->status_bookings !== 'Cancelled') {
-            return back()->with('error', 'Tidak dapat mengubah status jadwal yang sedang dibooking.');
+            return back()->with('error', 'Cannot change status of a currently booked schedule.');
         }
 
         $newStatus = $schedule->status_schedules === 'Available' ? 'Locked' : 'Available';
         $schedule->update(['status_schedules' => $newStatus]);
 
-        return redirect()->route('admin.schedules')->with('success', "Status jadwal diubah menjadi $newStatus.");
+        return redirect()->route('admin.schedules')->with('success', "Schedule status changed to $newStatus.");
     }
 
     public function destroyAll(Request $request)
@@ -157,6 +157,6 @@ class ScheduleController extends Controller
 
         $deleted = $query->where('status_schedules', '!=', 'Booked')->delete();
 
-        return back()->with('success', $deleted . ' jadwal berhasil dihapus (Jadwal yang sudah di-booking tidak ikut terhapus).');
+        return back()->with('success', $deleted . ' schedules deleted successfully (booked schedules were not affected).');
     }
 }

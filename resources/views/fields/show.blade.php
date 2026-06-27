@@ -8,9 +8,9 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div class="text-sm text-slate-500 mb-6 flex items-center gap-2">
-            <a href="{{ route('home') }}" class="hover:text-primary-600 font-medium transition">Beranda</a> 
+            <a href="{{ route('home') }}" class="hover:text-primary-600 font-medium transition">Home</a> 
             <span>&rsaquo;</span> 
-            <a href="{{ route('fields.index') }}" class="hover:text-primary-600 font-medium transition">Lapangan</a> 
+            <a href="{{ route('fields.index') }}" class="hover:text-primary-600 font-medium transition">Fields</a> 
             <span>&rsaquo;</span> 
             <span class="text-primary-700 font-bold">{{ $field->name_fields }}</span>
         </div>
@@ -48,7 +48,7 @@
                 
                 <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 md:p-8">
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl font-bold text-slate-800">Informasi Lapangan</h2>
+                        <h2 class="text-xl font-bold text-slate-800">Field Information</h2>
                         <span class="bg-primary-50 text-primary-700 text-xs font-bold px-3 py-1.5 rounded-md border border-primary-100 uppercase tracking-wide">Premium Facility</span>
                     </div>
                     <p class="text-slate-600 text-sm leading-relaxed mb-6">{{ $field->description }}</p>
@@ -56,28 +56,28 @@
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         @forelse($field->facilities as $facility)
                             <div class="flex items-center gap-2.5 text-slate-700 text-sm font-medium">
-                                <i class="fas fa-{{ $facility->icon ?? 'check-circle' }} text-accent-500 text-base w-5 text-center"></i> 
+                                <i class="fas fa-{{ $facility->icon ?? 'check-circle' }} text-blue-500 text-base w-5 text-center"></i> 
                                 {{ $facility->name_facilities }}
                             </div>
                         @empty
-                            <p class="text-slate-400 text-sm col-span-4">Belum ada fasilitas yang ditambahkan.</p>
+                            <p class="text-slate-400 text-sm col-span-4">No facilities added yet.</p>
                         @endforelse
                     </div>
                 </div>
 
                 <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 md:p-8">
-                    <h2 class="text-xl font-bold text-slate-800 mb-5">Pilih Sub-Lapangan</h2>
+                    <h2 class="text-xl font-bold text-slate-800 mb-5">Select Court Division</h2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                         @foreach($field->sub_courts as $sub)
                             @php 
-                                $subName = is_array($sub) ? ($sub['name'] ?? 'Sub-Lapangan') : $sub;
-                                $subType = is_array($sub) ? ($sub['type'] ?? 'Fasilitas Standar') : 'Fasilitas Standar';
+                                $subName = is_array($sub) ? ($sub['name'] ?? 'Sub-Court') : $sub;
+                                $subType = is_array($sub) ? ($sub['type'] ?? 'Standard Court') : 'Standard Court';
                             @endphp
                             <label class="bg-white border-2 rounded-xl p-4 cursor-pointer relative transition-all block"
                                    :class="selectedSubcourt === '{{ $subName }}' ? 'border-primary-500 shadow-[0_0_0_4px_rgba(59,130,246,0.1)]' : 'border-slate-200 hover:border-slate-300'">
                                 <input type="radio" name="subcourt" value="{{ $subName }}" x-model="selectedSubcourt" class="hidden">
                                 <div class="flex justify-between items-start mb-2">
-                                    <span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">Tersedia</span>
+                                    <span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">Available</span>
                                     <i class="fas fa-running transition-colors" :class="selectedSubcourt === '{{ $subName }}' ? 'text-primary-500' : 'text-slate-400'"></i>
                                 </div>
                                 <div class="font-bold text-slate-800 text-lg">{{ $subName }}</div>
@@ -89,10 +89,10 @@
 
                 <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 md:p-8">
                     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
-                        <h2 class="text-xl font-bold text-slate-800">Jadwal Tersedia</h2>
+                        <h2 class="text-xl font-bold text-slate-800">Available Schedule</h2>
                         
                         <div class="flex items-center gap-3">
-                            <label class="text-sm font-medium text-slate-600">Pilih Tanggal:</label>
+                            <label class="text-sm font-medium text-slate-600">Choose Date:</label>
                             <input type="date" x-model="playDate" @change="handleDateChange($event.target.value)"
                                    min="{{ \Carbon\Carbon::today()->toDateString() }}"
                                    class="border border-slate-300 text-slate-700 text-sm rounded-lg px-3 py-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all cursor-pointer bg-white">
@@ -110,7 +110,7 @@
                             </button>
                         </template>
                         <div x-show="filteredSchedules.length === 0" class="col-span-full text-center py-6 text-sm text-slate-500 font-medium" style="display: none;">
-                            Tidak ada jadwal untuk tanggal ini.
+                            No schedules available for this date.
                         </div>
                     </div>
                 </div>
@@ -126,20 +126,20 @@
                     <input type="hidden" name="subcourt_name" :value="selectedSubcourt">
 
                     <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 md:p-8">
-                        <h3 class="text-xl font-bold text-slate-800 mb-6 border-b border-slate-100 pb-4">Ringkasan Pesanan</h3>
+                        <h3 class="text-xl font-bold text-slate-800 mb-6 border-b border-slate-100 pb-4">Order Summary</h3>
                         
                         <div class="space-y-4 text-sm mb-6">
                             <div class="flex justify-between items-center">
-                                <span class="text-slate-500 font-medium">Lapangan</span> 
+                                <span class="text-slate-500 font-medium">Court</span> 
                                 <span class="font-bold text-primary-700" x-text="selectedSubcourt"></span>
                             </div>
                             <div class="flex justify-between items-center">
-                                <span class="text-slate-500 font-medium">Waktu</span> 
+                                <span class="text-slate-500 font-medium">Time</span> 
                                 <span x-text="selectedTimeRange" class="font-bold text-slate-800 text-right">-</span>
                             </div>
                             <div class="flex justify-between items-center">
-                                <span class="text-slate-500 font-medium">Harga Dasar</span> 
-                                <span class="font-bold text-slate-800">Rp {{ number_format($field->price_per_hour, 0, ',', '.') }} <span class="text-slate-400 font-normal">/ jam</span></span>
+                                <span class="text-slate-500 font-medium">Base Price</span> 
+                                <span class="font-bold text-slate-800">Rp {{ number_format($field->price_per_hour, 0, ',', '.') }} <span class="text-slate-400 font-normal">/ hr</span></span>
                             </div>
                         </div>
                         
@@ -152,19 +152,19 @@
                             <button type="submit" 
                                     :disabled="selectedScheduleIds.length === 0"
                                     class="w-full font-bold py-3.5 rounded-lg mb-3 flex justify-center items-center gap-2 transition-all"
-                                    :class="selectedScheduleIds.length > 0 ? 'bg-primary-600 hover:bg-primary-700 text-white shadow-md' : 'bg-slate-200 text-slate-400 cursor-not-allowed'">
-                                <i class="fas fa-check-circle"></i> Pesan Sekarang
+                                    :class="selectedScheduleIds.length > 0 ? 'bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white shadow-md' : 'bg-slate-200 text-slate-400 cursor-not-allowed'">
+                                <i class="fas fa-check-circle"></i> Book Now
                             </button>
                         @else
                             <a href="{{ route('login') }}" 
-                               class="w-full font-bold py-3.5 rounded-lg mb-3 flex justify-center items-center gap-2 transition-all bg-primary-600 hover:bg-primary-700 text-white shadow-md cursor-pointer block text-center">
-                                <i class="fas fa-sign-in-alt"></i> Login untuk Memesan
+                               class="w-full font-bold py-3.5 rounded-lg mb-3 flex justify-center items-center gap-2 transition-all bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white shadow-md cursor-pointer block text-center">
+                                <i class="fas fa-sign-in-alt"></i> Login to Book
                             </a>
                         @endauth
                         
                         <button type="button" class="w-full bg-white border border-slate-200 text-slate-600 font-bold py-3 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-all text-sm flex justify-center items-center gap-2 shadow-sm">
                             <div class="w-6 h-6 rounded-full bg-accent-100 text-accent-600 flex items-center justify-center text-[10px]">PE</div>
-                            Tanya Pengelola
+                            Ask Owner
                         </button>
                     </div>
                 </form>

@@ -1,24 +1,24 @@
 @extends('layouts.app')
 
-@section('title', 'Pembayaran - ActiveCourt')
+@section('title', 'Payment - ActiveCourt')
 
 @section('content')
 <div class="bg-slate-50 min-h-screen py-8">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <div class="text-sm text-slate-500 mb-6 flex items-center gap-2">
-            <a href="{{ route('home') }}" class="hover:text-primary-600 font-medium transition">Beranda</a>
+            <a href="{{ route('home') }}" class="hover:text-primary-600 font-medium transition">Home</a>
             <span>&rsaquo;</span>
-            <a href="{{ route('fields.index') }}" class="hover:text-primary-600 font-medium transition">Lapangan</a>
+            <a href="{{ route('fields.index') }}" class="hover:text-primary-600 font-medium transition">Fields</a>
             <span>&rsaquo;</span>
-            <a href="{{ route('user.history') }}" class="hover:text-primary-600 font-medium transition">Riwayat</a>
+            <a href="{{ route('user.history') }}" class="hover:text-primary-600 font-medium transition">History</a>
             <span>&rsaquo;</span>
-            <span class="text-primary-700 font-bold">Pembayaran</span>
+            <span class="text-primary-700 font-bold">Payment</span>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
 
-            {{-- Ringkasan Pesanan --}}
+            {{-- Order Summary --}}
             <div class="lg:col-span-3">
                 <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 md:p-8">
                     <div class="flex items-center gap-3 mb-6">
@@ -26,7 +26,7 @@
                             <i class="fas fa-receipt text-lg"></i>
                         </div>
                         <div>
-                            <h2 class="text-xl font-bold text-slate-800">Ringkasan Pesanan</h2>
+                            <h2 class="text-xl font-bold text-slate-800">Order Summary</h2>
                             <p class="text-xs text-slate-500 font-medium">{{ $booking->booking_code }}</p>
                         </div>
                     </div>
@@ -45,35 +45,35 @@
                                     {{ $booking->subcourt_name }} &middot;
                                     {{ \Carbon\Carbon::parse($booking->play_date)->format('d M Y') }} &middot;
                                     {{ $schedulesList->map(fn($s) => substr($s->start_time, 0, 5) . ' - ' . substr($s->end_time, 0, 5))->implode(', ') }}
-                                    ({{ $schedulesList->count() }} jam)
+                                    ({{ $schedulesList->count() }} hrs)
                                 </p>
                             </div>
                         </div>
 
                         <div class="divide-y divide-slate-100">
                             <div class="flex justify-between py-3">
-                                <span class="text-slate-600 font-medium">Harga per jam</span>
+                                <span class="text-slate-600 font-medium">Price per hour</span>
                                 <span class="font-bold text-slate-800">Rp {{ number_format($booking->schedule->field->price_per_hour ?? 0, 0, ',', '.') }}</span>
                             </div>
                             <div class="flex justify-between py-3">
-                                <span class="text-slate-600 font-medium">Durasi</span>
-                                <span class="font-bold text-slate-800">{{ $schedulesList->count() }} jam</span>
+                                <span class="text-slate-600 font-medium">Duration</span>
+                                <span class="font-bold text-slate-800">{{ $schedulesList->count() }} hrs</span>
                             </div>
                             <div class="flex justify-between py-3">
-                                <span class="text-slate-600 font-medium">Sub-Lapangan</span>
+                                <span class="text-slate-600 font-medium">Sub-Court</span>
                                 <span class="font-bold text-slate-800">{{ $booking->subcourt_name }}</span>
                             </div>
                         </div>
 
                         <div class="pt-4 border-t-2 border-slate-200 flex justify-between items-center">
-                            <span class="text-lg font-bold text-slate-800">Total Pembayaran</span>
+                            <span class="text-lg font-bold text-slate-800">Total Payment</span>
                             <span class="text-2xl font-extrabold text-accent-600">Rp {{ number_format($booking->total_price, 0, ',', '.') }}</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {{-- Panel Pembayaran --}}
+            {{-- Payment Panel --}}
             <div class="lg:col-span-2">
                 <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 md:p-8 sticky top-24">
                     <div class="flex items-center gap-3 mb-6">
@@ -81,33 +81,33 @@
                             <i class="fas fa-credit-card text-lg"></i>
                         </div>
                         <div>
-                            <h2 class="text-xl font-bold text-slate-800">Pembayaran</h2>
-                            <p class="text-xs text-slate-500 font-medium">Pilih metode pembayaran</p>
+                            <h2 class="text-xl font-bold text-slate-800">Payment</h2>
+                            <p class="text-xs text-slate-500 font-medium">Select payment method</p>
                         </div>
                     </div>
 
                     <p class="text-sm text-slate-600 mb-6 leading-relaxed">
-                        Klik tombol di bawah untuk membuka popup pembayaran Midtrans.
-                        Anda dapat membayar melalui <strong>GoPay, ShopeePay, Bank Transfer,</strong> atau metode lainnya.
+                        Click the button below to open the Midtrans payment popup.
+                        You can pay via <strong>GoPay, ShopeePay, Bank Transfer,</strong> or other methods.
                     </p>
 
                     <button id="pay-button"
                             class="w-full bg-accent-500 hover:bg-accent-600 text-white font-bold py-3.5 rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
                         <i class="fas fa-lock"></i>
-                        Bayar Sekarang
+                        Pay Now
                     </button>
 
                     <a href="{{ route('user.history') }}"
                        class="w-full mt-3 block text-center bg-white border border-slate-200 text-slate-600 font-bold py-3 rounded-lg hover:bg-slate-50 transition-all text-sm">
-                        Kembali ke Riwayat
+                        Back to History
                     </a>
 
                     <div class="mt-6 p-4 bg-slate-50 rounded-lg">
                         <div class="flex items-start gap-3">
                             <i class="fas fa-shield-alt text-primary-500 mt-0.5"></i>
                             <p class="text-xs text-slate-500 leading-relaxed">
-                                Pembayaran Anda diproses secara aman oleh <strong class="text-slate-700">Midtrans</strong>.
-                                Data kartu dan transaksi Anda terenkripsi dengan standar keamanan tertinggi.
+                                Your payment is processed securely by <strong class="text-slate-700">Midtrans</strong>.
+                                Your card and transaction details are encrypted with the highest security standards.
                             </p>
                         </div>
                     </div>
@@ -134,27 +134,15 @@ document.getElementById('pay-button').addEventListener('click', function(e) {
     let snapToken = "{{ $snapToken }}";
 
     if (!snapToken) {
-        alert('Snap Token tidak ditemukan');
+        Swal.fire('Error', 'Snap Token not found', 'error');
         return;
     }
 
     button.disabled = true;
-    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
 
     snap.pay(snapToken, {
-
-        //Tambahan bisa dihapus nanti kalo sudah deploy
-
-        // onSuccess: function(result) {
-
-        //     console.log('SUCCESS', result);
-
-        //     window.location.href =
-        //         "{{ route('user.history') }}?payment=success";
-        // },
-
         onSuccess: function(result) {
-
             fetch("{{ route('payment.forcePaid', $booking->id_bookings) }}", {
                 method: "POST",
                 headers: {
@@ -169,34 +157,27 @@ document.getElementById('pay-button').addEventListener('click', function(e) {
             })
             .catch(error => {
                 console.error(error);
-                alert("Gagal mengubah status booking");
+                Swal.fire('Error', 'Failed to update booking status', 'error');
             });
         },
 
         onPending: function(result) {
-
             console.log('PENDING', result);
-
             window.location.href =
                 "{{ route('user.history') }}?payment=pending";
         },
 
         onError: function(result) {
-
             console.log('ERROR', result);
-
             button.disabled = false;
             button.innerHTML = originalText;
-
-            alert('Pembayaran gagal.');
+            Swal.fire('Failed', 'Payment failed.', 'error');
         },
 
         onClose: function() {
-
             button.disabled = false;
             button.innerHTML = originalText;
-
-            alert('Anda menutup popup pembayaran.');
+            Swal.fire('Closed', 'You closed the payment window.', 'info');
         }
     });
 });

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Detail Booking - ActiveCourt')
+@section('title', 'Booking Details - ActiveCourt')
 
 @section('content')
 <div class="bg-slate-50 min-h-screen py-8">
@@ -8,11 +8,11 @@
 
         <!-- Breadcrumb -->
         <div class="text-sm text-slate-500 mb-6 flex items-center gap-2">
-            <a href="{{ route('home') }}" class="hover:text-primary-600">Beranda</a>
+            <a href="{{ route('home') }}" class="hover:text-primary-600">Home</a>
             <span>&rsaquo;</span>
-            <a href="{{ route('user.history') }}" class="hover:text-primary-600">Riwayat</a>
+            <a href="{{ route('user.history') }}" class="hover:text-primary-600">History</a>
             <span>&rsaquo;</span>
-            <span class="text-primary-700 font-bold">Detail Booking</span>
+            <span class="text-primary-700 font-bold">Booking Details</span>
         </div>
 
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
@@ -26,10 +26,10 @@
 
                     <div>
                         <h1 class="text-3xl font-bold text-slate-800">
-                            Detail Booking
+                            Booking Details
                         </h1>
                         <p class="text-slate-500 mt-1">
-                            Informasi lengkap reservasi lapangan Anda
+                            Complete information of your court reservation
                         </p>
                     </div>
                 </div>
@@ -42,7 +42,7 @@
 
                     <!-- Kode Booking -->
                     <div>
-                        <p class="text-sm text-slate-500 mb-1">Kode Booking</p>
+                        <p class="text-sm text-slate-500 mb-1">Booking Code</p>
                         <p class="font-bold text-xl text-slate-800">
                             {{ $booking->booking_code }}
                         </p>
@@ -50,7 +50,7 @@
 
                     <!-- Lapangan -->
                     <div>
-                        <p class="text-sm text-slate-500 mb-1">Lapangan</p>
+                        <p class="text-sm text-slate-500 mb-1">Field</p>
                         <p class="font-bold text-lg text-slate-800">
                             {{ $booking->schedule->field->name_fields ?? '-' }}
                         </p>
@@ -58,7 +58,7 @@
 
                     <!-- Tanggal -->
                     <div>
-                        <p class="text-sm text-slate-500 mb-1">Tanggal Bermain</p>
+                        <p class="text-sm text-slate-500 mb-1">Play Date</p>
                         <p class="font-semibold text-slate-800">
                             {{ \Carbon\Carbon::parse($booking->play_date)->format('d F Y') }}
                         </p>
@@ -66,7 +66,7 @@
 
                     <!-- Sub Court -->
                     <div>
-                        <p class="text-sm text-slate-500 mb-1">Sub Court</p>
+                        <p class="text-sm text-slate-500 mb-1">Sub-Court</p>
                         <p class="font-semibold text-slate-800">
                             {{ $booking->subcourt_name }}
                         </p>
@@ -74,7 +74,7 @@
 
                     <!-- Jam Bermain -->
                     <div class="md:col-span-2">
-                        <p class="text-sm text-slate-500 mb-3">Jam Bermain</p>
+                        <p class="text-sm text-slate-500 mb-3">Play Time</p>
 
                         <div class="flex flex-wrap gap-2">
                             @if($booking->getSchedulesList()->isNotEmpty())
@@ -87,7 +87,7 @@
                                 @endforeach
                             @else
                                 <span class="text-slate-400">
-                                    Jadwal tidak tersedia
+                                    Schedule unavailable
                                 </span>
                             @endif
                         </div>
@@ -95,8 +95,7 @@
 
                     <!-- Status -->
                     <div>
-                        <p class="text-sm text-slate-500 mb-1">Status Booking</p>
-
+                        <p class="text-sm text-slate-500 mb-1">Booking Status</p>
                         @if($booking->computed_status === 'Paid')
                             <span class="inline-flex px-3 py-1 bg-green-50 text-green-600 rounded-full text-sm font-bold border border-green-200">
                                 Paid
@@ -122,12 +121,12 @@
 
                     <!-- Payment Method -->
                     <div>
-                        <p class="text-sm text-slate-500 mb-1">Metode Pembayaran</p>
+                        <p class="text-sm text-slate-500 mb-1">Payment Method</p>
                         <p class="font-semibold text-slate-800">
                             @if($booking->computed_status === 'Paid' || $booking->computed_status === 'Done')
-                                {{ $booking->payment->payment_method ?? 'Otomatis' }}
+                                {{ $booking->payment->payment_method ?? 'Automatic' }}
                             @else
-                                {{ $booking->payment->payment_method ?? 'Belum Dibayar' }}
+                                {{ $booking->payment->payment_method ?? 'Unpaid' }}
                             @endif
                         </p>
                     </div>
@@ -138,7 +137,7 @@
                 <div class="mt-10 border-t border-slate-200 pt-6">
                     <div class="flex justify-between items-center">
                         <span class="text-lg font-semibold text-slate-600">
-                            Total Pembayaran
+                            Total Payment
                         </span>
 
                         <span class="text-3xl font-extrabold text-accent-600">
@@ -153,7 +152,7 @@
                     <a href="{{ route('user.history') }}"
                        class="px-5 py-3 border border-slate-300 rounded-xl font-semibold text-slate-700 hover:bg-slate-50 transition">
                         <i class="fas fa-arrow-left mr-2"></i>
-                        Kembali
+                        Back
                     </a>
 
                     @if($booking->computed_status === 'Paid' || $booking->computed_status === 'Done')

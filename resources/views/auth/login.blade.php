@@ -5,7 +5,7 @@
 @section('content')
 <!-- Tombol Back -->
 <a href="{{ url()->previous() }}" class="absolute top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 rounded-lg backdrop-blur-md transition shadow-sm border font-semibold text-sm text-slate-700 bg-slate-100 border-slate-200 hover:bg-slate-200 lg:text-white lg:bg-white/20 lg:border-white/20 lg:hover:bg-white/30">
-    <i class="fas fa-arrow-left"></i> Kembali
+    <i class="fas fa-arrow-left"></i> Back
 </a>
 
 <div class="flex min-h-screen">

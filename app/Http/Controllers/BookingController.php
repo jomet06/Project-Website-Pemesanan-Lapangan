@@ -28,7 +28,7 @@ class BookingController extends Controller
             $booking->update([
                 'status_bookings' => 'Cancelled',
                 'cancelled_at' => now(),
-                'cancel_reason' => 'Expired - pembayaran melebihi 30 menit'
+                'cancel_reason' => 'Expired - payment exceeded 30 minutes'
             ]);
 
             // Ubah status payment
@@ -86,7 +86,7 @@ class BookingController extends Controller
             ->get();
 
         if ($schedules->isEmpty()) {
-            return back()->with('error', 'Jadwal tidak ditemukan.');
+            return back()->with('error', 'Schedule not found.');
         }
 
         $totalPrice = 0;
@@ -96,11 +96,11 @@ class BookingController extends Controller
             $status = strtolower(trim($schedule->status_schedules));
             
             if (!in_array($status, ['tersedia', 'available', '0'])) {
-                return back()->with('error', 'Maaf, salah satu jadwal yang Anda pilih baru saja dibooking oleh orang lain.');
+                return back()->with('error', 'Sorry, one of the schedules you selected was just booked by someone else.');
             }
 
             if ($schedule->field->id_fields !== $firstFieldId) {
-                return back()->with('error', 'Semua jadwal harus dari lapangan yang sama.');
+                return back()->with('error', 'All schedules must be from the same field.');
             }
 
 
@@ -114,7 +114,7 @@ class BookingController extends Controller
             $oldBooking = Booking::findOrFail($rescheduleId);
             
             if ($totalPrice > $oldBooking->total_price) {
-                return back()->with('error', 'Durasi jadwal baru melebihi batas reschedule Anda. Pilih durasi yang sama atau lebih sedikit (Rp ' . number_format($oldBooking->total_price, 0, ',', '.') . ').');
+                return back()->with('error', 'The duration of the new schedule exceeds your reschedule limit. Select a duration equal to or less than Rp ' . number_format($oldBooking->total_price, 0, ',', '.') . ').');
             }
 
             $bookingCode = '#AC-RES-' . strtoupper(Str::random(4));
@@ -146,7 +146,7 @@ class BookingController extends Controller
             $this->freeSchedules($oldBooking);
 
             session()->forget('reschedule_booking_id');
-            return redirect()->route('user.history', ['tab' => 'paid'])->with('success_reschedule', 'Jadwal berhasil di-reschedule!');
+            return redirect()->route('user.history', ['tab' => 'paid'])->with('success_reschedule', 'Schedule rescheduled successfully!');
         }
 
         $bookingCode = '#AC-' . strtoupper(Str::random(6));
@@ -211,7 +211,7 @@ class BookingController extends Controller
         ]);
 
         if ($booking->status_bookings === 'Cancelled') {
-            return back()->with('error', 'Booking ini sudah dibatalkan sebelumnya.');
+            return back()->with('error', 'This booking has already been cancelled.');
         }
 
         try {
@@ -237,7 +237,7 @@ class BookingController extends Controller
             $daysDifference = $today->diffInDays($playDate, false);
 
             if ($daysDifference < 3) {
-                return back()->with('error', 'Pembatalan gagal. Booking yang sudah dibayar hanya dapat dibatalkan maksimal H-3 sebelum jadwal bermain.');
+                return back()->with('error', 'Cancellation failed. Paid bookings can only be cancelled at least 3 days (H-3) before the play date.');
             }
 
             $booking->update([
@@ -248,7 +248,7 @@ class BookingController extends Controller
             return back()->with('success_cancel', 'Booking has been canceled and your money is refunded.');
         }
 
-        return back()->with('error', 'Booking tidak dapat dibatalkan.');
+        return back()->with('error', 'Booking cannot be cancelled.');
     }
 
     public function reschedule(Request $request, $id)
@@ -260,7 +260,7 @@ class BookingController extends Controller
                           ->firstOrFail();
 
         if ($booking->status_bookings !== 'Paid') {
-            return back()->with('error', 'Hanya booking yang sudah dibayar yang dapat di-reschedule.');
+            return back()->with('error', 'Only paid bookings can be rescheduled.');
         }
 
         $playDate = Carbon::parse($booking->play_date);
@@ -268,14 +268,14 @@ class BookingController extends Controller
         $daysDifference = $today->diffInDays($playDate, false);
 
         if ($daysDifference < 3 && !Carbon::parse($booking->play_date)->isPast()) {
-            return back()->with('error', 'Reschedule gagal. Hanya dapat dilakukan maksimal H-3 sebelum jadwal bermain.');
+            return back()->with('error', 'Reschedule failed. Can only be done at least 3 days (H-3) before the play date.');
         }
 
         session(['reschedule_booking_id' => $booking->id_bookings]);
 
         // Redirect to the specific field page so they can pick a new date/time
         return redirect()->route('fields.show', $booking->schedule->field_id ?? $booking->getSchedulesList()->first()->field_id)
-            ->with('info', 'Pilih jadwal baru. Anda sedang dalam mode Reschedule (Maks Rp ' . number_format($booking->total_price, 0, ',', '.') . ').');
+            ->with('info', 'Select a new schedule. You are currently in Reschedule mode (Max Rp ' . number_format($booking->total_price, 0, ',', '.') . ').');
     }
 
     /**
@@ -326,7 +326,7 @@ class BookingController extends Controller
             ->firstOrFail();
 
         if ($booking->status_bookings !== 'Paid') {
-            return redirect()->route('user.history')->with('error', 'Invoice hanya tersedia untuk booking yang sudah dibayar.');
+            return redirect()->route('user.history')->with('error', 'Invoice is only available for paid bookings.');
         }
 
         return view('user.invoice', compact('booking'));
@@ -343,7 +343,7 @@ class BookingController extends Controller
         $snapToken = $booking->payment?->snap_token;
 
         if (!$snapToken) {
-            return redirect()->route('user.history')->with('error', 'Token pembayaran tidak ditemukan. Silakan lakukan booking ulang.');
+            return redirect()->route('user.history')->with('error', 'Payment token not found. Please try booking again.');
         }
 
         return view('fields.checkout', compact('booking', 'snapToken'));

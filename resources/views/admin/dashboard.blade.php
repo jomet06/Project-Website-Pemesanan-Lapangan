@@ -15,7 +15,7 @@
         </div>
         <p class="text-2xl font-extrabold text-slate-800">Rp {{ number_format($totalRevenue ?? 42500000, 0, ',', '.') }}</p>
         <p class="text-xs text-green-600 mt-1 flex items-center gap-1">
-            <i class="fas fa-arrow-up"></i> +12.5% dari bulan lalu
+            <i class="fas fa-arrow-up"></i> +12.5% from last month
         </p>
     </div>
     <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition">
@@ -27,7 +27,7 @@
         </div>
         <p class="text-2xl font-extrabold text-slate-800">{{ $activeBookings ?? 24 }}</p>
         <p class="text-xs text-blue-600 mt-1 flex items-center gap-1">
-            <i class="fas fa-arrow-up"></i> +3 dari minggu lalu
+            <i class="fas fa-arrow-up"></i> +3 from last week
         </p>
     </div>
     <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition">
@@ -39,7 +39,7 @@
         </div>
         <p class="text-2xl font-extrabold text-slate-800">{{ $newUsers ?? 128 }}</p>
         <p class="text-xs text-accent-600 mt-1 flex items-center gap-1">
-            <i class="fas fa-arrow-up"></i> +18% dari bulan lalu
+            <i class="fas fa-arrow-up"></i> +18% from last month
         </p>
     </div>
     <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition">
@@ -51,7 +51,7 @@
         </div>
         <p class="text-2xl font-extrabold text-slate-800">{{ $conversionRate ?? 68.5 }}%</p>
         <p class="text-xs text-purple-600 mt-1 flex items-center gap-1">
-            <i class="fas fa-arrow-up"></i> +2.1% dari bulan lalu
+            <i class="fas fa-arrow-up"></i> +2.1% from last month
         </p>
     </div>
 </div>
@@ -60,23 +60,23 @@
 <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6">
     <div class="flex items-center justify-between mb-4">
         <div>
-            <h3 class="font-bold text-slate-800">Ringkasan Keuangan</h3>
-            <p class="text-xs text-slate-500 font-medium">Data transaksi dan pendapatan terkini</p>
+            <h3 class="font-bold text-slate-800">Financial Summary</h3>
+            <p class="text-xs text-slate-500 font-medium">Recent transaction and revenue data</p>
         </div>
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div class="bg-green-50 rounded-lg p-4 border border-green-100">
-            <span class="text-xs font-bold text-green-600 uppercase tracking-wider">Total Pendapatan</span>
+            <span class="text-xs font-bold text-green-600 uppercase tracking-wider">Total Revenue</span>
             <p class="text-2xl font-extrabold text-green-700 mt-1">Rp {{ number_format($totalRevenue ?? 0, 0, ',', '.') }}</p>
-            <p class="text-xs text-green-500 mt-1">Semua waktu</p>
+            <p class="text-xs text-green-500 mt-1">All-time</p>
         </div>
         <div class="bg-accent-50 rounded-lg p-4 border border-accent-100">
-            <span class="text-xs font-bold text-accent-600 uppercase tracking-wider">Pendapatan Hari Ini</span>
+            <span class="text-xs font-bold text-accent-600 uppercase tracking-wider">Today's Revenue</span>
             <p class="text-2xl font-extrabold text-accent-700 mt-1">Rp {{ number_format($todayRevenue ?? 0, 0, ',', '.') }}</p>
-            <p class="text-xs text-accent-500 mt-1">{{ $todayBookings ?? 0 }} booking hari ini</p>
+            <p class="text-xs text-accent-500 mt-1">{{ $todayBookings ?? 0 }} bookings today</p>
         </div>
         <div class="bg-blue-50 rounded-lg p-4 border border-blue-100">
-            <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Booking Aktif</span>
+            <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Active Bookings</span>
             <p class="text-2xl font-extrabold text-blue-700 mt-1">{{ $activeBookings ?? 0 }}</p>
             <p class="text-xs text-blue-500 mt-1">{{ $pendingBookings ?? 0 }} pending</p>
         </div>
@@ -88,7 +88,7 @@
     <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm">
         <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
             <h3 class="font-bold text-slate-800">Recent Bookings</h3>
-            <a href="{{ route('admin.bookings') }}" class="text-sm text-accent-600 hover:text-accent-700 font-medium">Lihat Semua</a>
+            <a href="{{ route('admin.bookings') }}" class="text-sm text-accent-600 hover:text-accent-700 font-medium">View All</a>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full">
@@ -124,7 +124,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="py-8 text-center text-slate-400 text-sm">Belum ada data booking</td>
+                        <td colspan="5" class="py-8 text-center text-slate-400 text-sm">No bookings recorded yet</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -137,23 +137,23 @@
         <h3 class="font-bold text-slate-800 mb-4">Quick Stats</h3>
         <div class="space-y-4">
             <div class="flex items-center justify-between py-3 border-b border-slate-100">
-                <span class="text-sm text-slate-600">Total Lapangan</span>
+                <span class="text-sm text-slate-600">Total Fields</span>
                 <span class="font-bold text-slate-800">{{ $totalFields ?? 12 }}</span>
             </div>
             <div class="flex items-center justify-between py-3 border-b border-slate-100">
-                <span class="text-sm text-slate-600">Total Pengguna</span>
+                <span class="text-sm text-slate-600">Total Users</span>
                 <span class="font-bold text-slate-800">{{ $totalUsers ?? 256 }}</span>
             </div>
             <div class="flex items-center justify-between py-3 border-b border-slate-100">
-                <span class="text-sm text-slate-600">Booking Hari Ini</span>
+                <span class="text-sm text-slate-600">Today's Bookings</span>
                 <span class="font-bold text-slate-800">{{ $todayBookings ?? 5 }}</span>
             </div>
             <div class="flex items-center justify-between py-3 border-b border-slate-100">
-                <span class="text-sm text-slate-600">Pendapatan Hari Ini</span>
+                <span class="text-sm text-slate-600">Today's Revenue</span>
                 <span class="font-bold text-slate-800">Rp {{ number_format($todayRevenue ?? 750000, 0, ',', '.') }}</span>
             </div>
             <div class="flex items-center justify-between py-3">
-                <span class="text-sm text-slate-600">Booking Pending</span>
+                <span class="text-sm text-slate-600">Pending Bookings</span>
                 <span class="font-bold text-amber-600">{{ $pendingBookings ?? 3 }}</span>
             </div>
         </div>

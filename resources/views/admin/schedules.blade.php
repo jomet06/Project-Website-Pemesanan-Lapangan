@@ -4,92 +4,108 @@
 @section('page-title', 'Schedule Management')
 
 @section('content')
-@if(session('success'))
-<div class="bg-green-100 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-4 flex items-center gap-2">
-    <i class="fas fa-check-circle"></i> {{ session('success') }}
-</div>
-@endif
-@if(session('info'))
-<div class="bg-blue-100 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg mb-4 flex items-center gap-2">
-    <i class="fas fa-info-circle"></i> {{ session('info') }}
-</div>
-@endif
-@if(session('error'))
-<div class="bg-red-100 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 flex items-center gap-2">
-    <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
-</div>
-@endif
-@if($errors->any())
-<div class="bg-red-100 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 flex items-center gap-2">
-    <i class="fas fa-exclamation-circle"></i> Gagal menambahkan! Silakan periksa kembali isian form Anda.
-</div>
-@endif
+<div x-data="{ addModalOpen: false }">
 
-<!-- Add Schedule Form -->
-<div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6">
-    <div class="flex items-center gap-3 mb-5">
-        <div class="w-10 h-10 bg-primary-100 text-primary-600 rounded-lg flex items-center justify-center">
-            <i class="fas fa-clock"></i>
-        </div>
-        <div>
-            <h3 class="font-bold text-slate-800">Tambah Jadwal Baru</h3>
-            <p class="text-xs text-slate-500 font-medium">Buat slot jadwal untuk lapangan</p>
-        </div>
+<!-- Add Schedule Modal -->
+<div x-show="addModalOpen" 
+     x-transition:enter="transition ease-out duration-300"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition ease-in duration-200"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4"
+     x-cloak>
+    
+    <!-- Modal container -->
+    <div @click.away="addModalOpen = false" 
+         x-show="addModalOpen"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+         x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+         x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+         class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col">
+         
+         <!-- Modal Header -->
+         <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+             <div class="flex items-center gap-3">
+                 <div class="w-10 h-10 bg-primary-100 text-primary-600 rounded-lg flex items-center justify-center">
+                     <i class="fas fa-clock"></i>
+                 </div>
+                 <div>
+                     <h3 class="font-bold text-slate-800">Generate Schedules</h3>
+                     <p class="text-xs text-slate-500 font-medium">Create batch schedule slots for fields</p>
+                 </div>
+             </div>
+             <button @click="addModalOpen = false" class="text-slate-400 hover:text-slate-600 focus:outline-none">
+                 <i class="fas fa-times text-lg"></i>
+             </button>
+         </div>
+         
+         <!-- Modal Form -->
+         <form action="{{ route('admin.schedules.store') }}" method="POST" class="p-6 space-y-4">
+             @csrf
+             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                 <div class="sm:col-span-2">
+                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Field</label>
+                     <select name="field_id" required class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none">
+                         <option value="">Select Field</option>
+                         @foreach($fields as $field)
+                             <option value="{{ $field->id_fields }}">{{ $field->name_fields }} ({{ $field->type_fields }})</option>
+                         @endforeach
+                     </select>
+                 </div>
+                 <div>
+                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Start Date</label>
+                     <input type="date" name="start_date" required min="{{ \Carbon\Carbon::today()->toDateString() }}" 
+                            class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none">
+                 </div>
+                 <div>
+                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">End Date</label>
+                     <input type="date" name="end_date" required min="{{ \Carbon\Carbon::today()->toDateString() }}" 
+                            class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none">
+                 </div>
+                 <div>
+                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Start Time</label>
+                     <input type="time" name="start_time" required class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none">
+                 </div>
+                 <div>
+                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">End Time</label>
+                     <input type="time" name="end_time" required class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none">
+                 </div>
+                 <div class="sm:col-span-2">
+                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Interval</label>
+                     <select name="interval" required class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none">
+                         <option value="60">60 Minutes</option>
+                         <option value="90">90 Minutes</option>
+                         <option value="120">120 Minutes</option>
+                     </select>
+                 </div>
+             </div>
+             
+             <!-- Modal Footer Actions -->
+             <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                 <button type="button" @click="addModalOpen = false" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold px-5 py-2.5 rounded-lg hover:bg-slate-50 transition">
+                     Cancel
+                 </button>
+                 <button type="submit" class="bg-accent-500 hover:bg-accent-600 text-white text-sm font-bold px-6 py-2.5 rounded-lg transition shadow-sm flex items-center gap-2">
+                     <i class="fas fa-plus"></i> Generate Schedule
+                 </button>
+             </div>
+         </form>
     </div>
-
-    <form action="{{ route('admin.schedules.store') }}" method="POST" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4 items-end">
-        @csrf
-        <div class="lg:col-span-2">
-            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Lapangan</label>
-            <select name="field_id" required class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none">
-                <option value="">Pilih Lapangan</option>
-                @foreach($fields as $field)
-                    <option value="{{ $field->id_fields }}">{{ $field->name_fields }} ({{ $field->type_fields }})</option>
-                @endforeach
-            </select>
-        </div>
-        <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Tgl Mulai</label>
-            <input type="date" name="start_date" required min="{{ \Carbon\Carbon::today()->toDateString() }}" 
-                   class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none">
-        </div>
-        <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Tgl Selesai</label>
-            <input type="date" name="end_date" required min="{{ \Carbon\Carbon::today()->toDateString() }}" 
-                   class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none">
-        </div>
-        <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Jam Mulai</label>
-            <input type="time" name="start_time" required class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none">
-        </div>
-        <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Jam Selesai</label>
-            <input type="time" name="end_time" required class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none">
-        </div>
-        <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Interval</label>
-            <select name="interval" required class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none">
-                <option value="60">60 Menit</option>
-                <option value="90">90 Menit</option>
-                <option value="120">120 Menit</option>
-            </select>
-        </div>
-        <div class="lg:col-span-7 flex justify-end">
-            <button type="submit" class="bg-accent-500 hover:bg-accent-600 text-white text-sm font-bold px-6 py-2.5 rounded-lg transition shadow-sm flex items-center gap-2">
-                <i class="fas fa-plus"></i> Generate Jadwal
-            </button>
-        </div>
-    </form>
 </div>
 
 <!-- Schedules Table -->
 <div class="bg-white rounded-xl border border-slate-200 shadow-sm">
     <div class="flex flex-col md:flex-row items-start md:items-center justify-between px-6 py-4 border-b border-slate-100 gap-4">
-        <h3 class="font-bold text-slate-800">Daftar Jadwal</h3>
+        <h3 class="font-bold text-slate-800">Schedule List</h3>
         <div class="flex flex-col lg:flex-row items-center gap-4 w-full md:w-auto">
             <form action="{{ route('admin.schedules') }}" method="GET" class="flex flex-col lg:flex-row items-center gap-2 w-full md:w-auto">
-                <select name="filter_field_id" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-accent-500 outline-none w-full sm:w-auto">
-                    <option value="">Semua Lapangan</option>
+                <select name="filter_field_id" onchange="this.form.submit()" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-accent-500 outline-none w-full sm:w-auto">
+                    <option value="">All Fields</option>
                     @foreach($fields as $field)
                         <option value="{{ $field->id_fields }}" {{ request('filter_field_id') == $field->id_fields ? 'selected' : '' }}>
                             {{ $field->name_fields }}
@@ -97,25 +113,29 @@
                     @endforeach
                 </select>
                 <div class="flex items-center gap-2 w-full sm:w-auto">
-                    <input type="date" name="filter_start_date" 
+                    <input type="date" name="filter_start_date" onchange="this.form.submit()"
                            class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-accent-500 outline-none w-full"
                            value="{{ request('filter_start_date', \Carbon\Carbon::today()->toDateString()) }}">
-                    <span class="text-slate-400 font-medium text-sm text-center">s/d</span>
-                    <input type="date" name="filter_end_date" 
+                    <span class="text-slate-400 font-medium text-sm text-center">to</span>
+                    <input type="date" name="filter_end_date" onchange="this.form.submit()"
                            class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-accent-500 outline-none w-full"
                            value="{{ request('filter_end_date', \Carbon\Carbon::today()->toDateString()) }}">
                 </div>
-                <button type="submit" class="bg-primary-500 hover:bg-primary-600 text-white text-sm font-bold px-4 py-1.5 rounded-lg transition w-full sm:w-auto">Filter</button>
             </form>
-            <form action="{{ route('admin.schedules.destroyAll') }}" method="POST" onsubmit="return confirm('Hapus semua jadwal kosong (Available/Locked) pada filter ini?')" class="w-full sm:w-auto">
-                @csrf
-                <input type="hidden" name="filter_field_id" value="{{ request('filter_field_id') }}">
-                <input type="hidden" name="filter_start_date" value="{{ request('filter_start_date', \Carbon\Carbon::today()->toDateString()) }}">
-                <input type="hidden" name="filter_end_date" value="{{ request('filter_end_date', \Carbon\Carbon::today()->toDateString()) }}">
-                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white text-sm font-bold px-4 py-1.5 rounded-lg transition w-full sm:w-auto flex items-center justify-center gap-2">
-                    <i class="fas fa-trash"></i> Hapus Semua
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+                <form action="{{ route('admin.schedules.destroyAll') }}" method="POST" data-confirm="Are you sure you want to delete all empty schedules (Available/Locked) on this filter?" class="w-full sm:w-auto">
+                    @csrf
+                    <input type="hidden" name="filter_field_id" value="{{ request('filter_field_id') }}">
+                    <input type="hidden" name="filter_start_date" value="{{ request('filter_start_date', \Carbon\Carbon::today()->toDateString()) }}">
+                    <input type="hidden" name="filter_end_date" value="{{ request('filter_end_date', \Carbon\Carbon::today()->toDateString()) }}">
+                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white text-sm font-bold px-4 py-1.5 rounded-lg transition w-full sm:w-auto flex items-center justify-center gap-2">
+                        <i class="fas fa-trash"></i> Delete All
+                    </button>
+                </form>
+                <button @click="addModalOpen = true" class="bg-accent-500 hover:bg-accent-600 text-white text-sm font-bold px-4 py-1.5 rounded-lg transition w-full sm:w-auto flex items-center justify-center gap-2 shadow-sm">
+                    <i class="fas fa-calendar-plus"></i> Generate
                 </button>
-            </form>
+            </div>
         </div>
     </div>
     <div class="overflow-x-auto">
@@ -177,7 +197,7 @@
                                     <i class="fas fa-{{ $schedule->status_schedules === 'Available' ? 'lock' : 'lock-open' }} text-xs"></i>
                                 </button>
                             </form>
-                            <form action="{{ route('admin.schedules.destroy', $schedule->id_schedules) }}" method="POST" class="inline" onsubmit="return confirm('Hapus jadwal ini?')">
+                            <form action="{{ route('admin.schedules.destroy', $schedule->id_schedules) }}" method="POST" class="inline" data-confirm="Are you sure you want to delete this schedule?">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="w-8 h-8 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition flex items-center justify-center" title="Delete">
@@ -190,15 +210,16 @@
                 @empty
                 <tr>
                     <td colspan="7" class="py-12 text-center">
-                        <div class="text-5xl mb-3">📅</div>
-                        <p class="text-slate-500 font-medium">Belum ada jadwal</p>
-                        <p class="text-slate-400 text-sm mt-1">Buat jadwal baru menggunakan form di atas.</p>
+                        <div class="text-5xl text-blue-500 mb-3"><i class="fas fa-calendar-alt"></i></div>
+                        <p class="text-slate-500 font-medium">No schedules found</p>
+                        <p class="text-slate-400 text-sm mt-1">Create a new schedule using the form above.</p>
                     </td>
                 </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
+</div>
 </div>
 @endsection
 

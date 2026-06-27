@@ -79,7 +79,7 @@ class AdminController extends Controller
         $subCourts = array_map('trim', explode(',', $request->sub_courts));
         $subCourts = array_filter($subCourts);
         if (empty($subCourts)) {
-            return back()->with('error', 'Sub-courts harus diisi dengan format yang dipisahkan koma, minimal 1 item.');
+            return back()->with('error', 'Sub-courts must be filled in a comma-separated format, at least 1 item.');
         }
 
         $imagePath = null;
@@ -87,7 +87,7 @@ class AdminController extends Controller
             $imagePath = $request->file('image')->store('fields', 'public');
         }
 
-        Field::query()->create([
+        $field = Field::query()->create([
             'name_fields' => $request->name_fields,
             'type_fields' => $request->type_fields,
             'address' => $request->address,
@@ -98,7 +98,63 @@ class AdminController extends Controller
             'sub_courts' => $subCourts,
         ]);
 
-        return redirect()->route('admin.fields')->with('success', 'Lapangan berhasil ditambahkan.');
+        $iconMap = [
+            'Free WiFi' => 'wifi',
+            'WiFi' => 'wifi',
+            'Shower Room' => 'shower',
+            'Shower' => 'shower',
+            'Secure Parking' => 'parking',
+            'Parking' => 'parking',
+            'Full AC Area' => 'snowflake',
+            'AC' => 'snowflake',
+            'Locker Room' => 'key',
+            'Locker' => 'key',
+            'Canteen' => 'coffee',
+            'Cafe' => 'coffee',
+            'Lightings' => 'lightbulb',
+            'Lights' => 'lightbulb',
+            'Toilet' => 'toilet',
+            'Prayer Room' => 'mosque',
+            'Mushola' => 'mosque',
+            'First Aid' => 'first-aid',
+        ];
+
+        if ($request->has('facilities')) {
+            foreach ($request->facilities as $facName) {
+                if (empty(trim($facName))) continue;
+                $icon = 'check-circle';
+                foreach ($iconMap as $key => $val) {
+                    if (stripos($facName, $key) !== false) {
+                        $icon = $val;
+                        break;
+                    }
+                }
+                $field->facilities()->create([
+                    'name_facilities' => trim($facName),
+                    'icon' => $icon,
+                ]);
+            }
+        }
+
+        if ($request->has('custom_facilities') && !empty($request->custom_facilities)) {
+            $customFacs = array_map('trim', explode(',', $request->custom_facilities));
+            foreach ($customFacs as $facName) {
+                if (empty($facName)) continue;
+                $icon = 'check-circle';
+                foreach ($iconMap as $key => $val) {
+                    if (stripos($facName, $key) !== false) {
+                        $icon = $val;
+                        break;
+                    }
+                }
+                $field->facilities()->create([
+                    'name_facilities' => $facName,
+                    'icon' => $icon,
+                ]);
+            }
+        }
+
+        return redirect()->route('admin.fields')->with('success', 'Field added successfully.');
     }
 
     public function editField($id)
@@ -125,7 +181,7 @@ class AdminController extends Controller
         $subCourts = array_map('trim', explode(',', $request->sub_courts));
         $subCourts = array_filter($subCourts);
         if (empty($subCourts)) {
-            return back()->with('error', 'Sub-courts harus diisi dengan format yang dipisahkan koma, minimal 1 item.');
+            return back()->with('error', 'Sub-courts must be filled in a comma-separated format, at least 1 item.');
         }
 
         $data = [
@@ -149,7 +205,65 @@ class AdminController extends Controller
 
         $field->update($data);
 
-        return redirect()->route('admin.fields')->with('success', 'Lapangan berhasil diperbarui.');
+        $field->facilities()->delete();
+
+        $iconMap = [
+            'Free WiFi' => 'wifi',
+            'WiFi' => 'wifi',
+            'Shower Room' => 'shower',
+            'Shower' => 'shower',
+            'Secure Parking' => 'parking',
+            'Parking' => 'parking',
+            'Full AC Area' => 'snowflake',
+            'AC' => 'snowflake',
+            'Locker Room' => 'key',
+            'Locker' => 'key',
+            'Canteen' => 'coffee',
+            'Cafe' => 'coffee',
+            'Lightings' => 'lightbulb',
+            'Lights' => 'lightbulb',
+            'Toilet' => 'toilet',
+            'Prayer Room' => 'mosque',
+            'Mushola' => 'mosque',
+            'First Aid' => 'first-aid',
+        ];
+
+        if ($request->has('facilities')) {
+            foreach ($request->facilities as $facName) {
+                if (empty(trim($facName))) continue;
+                $icon = 'check-circle';
+                foreach ($iconMap as $key => $val) {
+                    if (stripos($facName, $key) !== false) {
+                        $icon = $val;
+                        break;
+                    }
+                }
+                $field->facilities()->create([
+                    'name_facilities' => trim($facName),
+                    'icon' => $icon,
+                ]);
+            }
+        }
+
+        if ($request->has('custom_facilities') && !empty($request->custom_facilities)) {
+            $customFacs = array_map('trim', explode(',', $request->custom_facilities));
+            foreach ($customFacs as $facName) {
+                if (empty($facName)) continue;
+                $icon = 'check-circle';
+                foreach ($iconMap as $key => $val) {
+                    if (stripos($facName, $key) !== false) {
+                        $icon = $val;
+                        break;
+                    }
+                }
+                $field->facilities()->create([
+                    'name_facilities' => $facName,
+                    'icon' => $icon,
+                ]);
+            }
+        }
+
+        return redirect()->route('admin.fields')->with('success', 'Field updated successfully.');
     }
 
     public function destroyField($id)
@@ -159,7 +273,7 @@ class AdminController extends Controller
         // Check if there are active schedules
         $activeSchedules = $field->schedules()->where('status_schedules', 'Booked')->count();
         if ($activeSchedules > 0) {
-            return back()->with('error', 'Tidak dapat menghapus lapangan yang memiliki jadwal aktif.');
+            return back()->with('error', 'Cannot delete field with active bookings.');
         }
 
         if ($field->image) {
@@ -167,7 +281,7 @@ class AdminController extends Controller
         }
 
         $field->delete();
-        return redirect()->route('admin.fields')->with('success', 'Lapangan berhasil dihapus.');
+        return redirect()->route('admin.fields')->with('success', 'Field deleted successfully.');
     }
 
     // ==================== USERS ====================
@@ -205,7 +319,7 @@ class AdminController extends Controller
             'role' => $request->role,
         ]);
 
-        return redirect()->route('admin.users')->with('success', 'Data pengguna berhasil diperbarui.');
+        return redirect()->route('admin.users')->with('success', 'User data updated successfully.');
     }
 
     public function toggleBanUser($id)
@@ -213,15 +327,15 @@ class AdminController extends Controller
         $user = User::query()->findOrFail($id);
 
         if ($user->role === 'admin') {
-            return back()->with('error', 'Tidak dapat mem-ban admin.');
+            return back()->with('error', 'Cannot ban admin users.');
         }
 
         if ($user->banned_at) {
             $user->update(['banned_at' => null]);
-            return redirect()->route('admin.users')->with('success', "Pengguna {$user->username} berhasil di-unban.");
+            return redirect()->route('admin.users')->with('success', "User {$user->username} has been successfully unbanned.");
         } else {
             $user->update(['banned_at' => now()]);
-            return redirect()->route('admin.users')->with('success', "Pengguna {$user->username} berhasil di-ban.");
+            return redirect()->route('admin.users')->with('success', "User {$user->username} has been successfully banned.");
         }
     }
 
@@ -258,7 +372,7 @@ class AdminController extends Controller
         $booking = Booking::query()->findOrFail($id);
 
         if ($booking->status_bookings === 'Paid') {
-            return back()->with('info', 'Booking ini sudah berstatus Paid.');
+            return back()->with('info', 'This booking status is already Paid.');
         }
 
         $booking->update([
@@ -270,7 +384,7 @@ class AdminController extends Controller
             'paid_at' => now()
         ]);
 
-        return redirect()->route('admin.bookings')->with('success', "Booking {$booking->booking_code} berhasil dipaksa menjadi Paid.");
+        return redirect()->route('admin.bookings')->with('success', "Booking {$booking->booking_code} has been successfully forced to Paid.");
     }
 
     public function cancelBooking($id)
@@ -278,19 +392,19 @@ class AdminController extends Controller
         $booking = Booking::query()->with('schedule.field')->findOrFail($id);
 
         if ($booking->status_bookings === 'Cancelled') {
-            return back()->with('error', 'Booking ini sudah dibatalkan.');
+            return back()->with('error', 'This booking has already been cancelled.');
         }
 
         $booking->update([
             'status_bookings' => 'Cancelled',
             'cancelled_at' => now(),
-            'cancel_reason' => 'Dibatalkan oleh admin',
+            'cancel_reason' => 'Cancelled by admin',
         ]);
 
         // Free schedules
         $this->freeSchedules($booking);
 
-        return redirect()->route('admin.bookings')->with('success', "Booking {$booking->booking_code} berhasil dibatalkan.");
+        return redirect()->route('admin.bookings')->with('success', "Booking {$booking->booking_code} has been successfully cancelled.");
     }
 
     /**

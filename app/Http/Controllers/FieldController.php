@@ -12,7 +12,10 @@ class FieldController extends Controller
         $query = Field::with('facilities');
 
         if ($location = $request->location) {
-            $query->where('description', 'like', '%' . $location . '%');
+            $query->where(function ($q) use ($location) {
+                $q->where('address', 'like', '%' . $location . '%')
+                  ->orWhere('description', 'like', '%' . $location . '%');
+            });
         }
 
         if ($sports = $request->sports) {
@@ -24,13 +27,13 @@ class FieldController extends Controller
         }
 
         if ($sort = $request->sort) {
-            if ($sort === 'Harga Terendah') {
+            if ($sort === 'lowest_price' || $sort === 'Harga Terendah') {
                 $query->orderBy('price_per_hour', 'asc');
-            } elseif ($sort === 'Harga Tertinggi') {
+            } elseif ($sort === 'highest_price' || $sort === 'Harga Tertinggi') {
                 $query->orderBy('price_per_hour', 'desc');
-            } elseif ($sort === 'Terpopuler') {
+            } elseif ($sort === 'popular' || $sort === 'Terpopuler') {
                 $query->withCount('schedules')->orderBy('schedules_count', 'desc');
-            } elseif ($sort === 'Terbaru') {
+            } elseif ($sort === 'newest' || $sort === 'Terbaru') {
                 $query->latest();
             } else {
                 $query->latest();

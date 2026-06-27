@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="id" class="scroll-smooth">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>@yield('title', 'ActiveCourt - Sewa Lapangan Olahraga')</title>
+    <title>@yield('title', 'ActiveCourt - Sports Venue Booking')</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -28,83 +28,97 @@
     
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
 </head>
 <body class="bg-slate-50 font-sans text-slate-800 antialiased flex flex-col min-h-screen">
 
-    <div class="fixed top-24 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col gap-3 w-full max-w-md px-4 pointer-events-none">
-        @if(session('success'))
-        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)"
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="opacity-0 -translate-y-4 scale-95"
-             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-             x-transition:leave="transition ease-in duration-200"
-             x-transition:leave-start="opacity-100 scale-100"
-             x-transition:leave-end="opacity-0 scale-95"
-             class="bg-white border-l-4 border-green-500 shadow-2xl rounded-xl p-4 flex items-start gap-3 pointer-events-auto">
-            <div class="bg-green-100 rounded-full p-1.5 flex-shrink-0 mt-0.5">
-                <i class="fas fa-check text-green-600 text-sm"></i>
-            </div>
-            <div class="flex-1">
-                <h4 class="text-sm font-bold text-slate-800">Berhasil!</h4>
-                <p class="text-sm text-slate-600 mt-0.5">{{ session('success') }}</p>
-            </div>
-            <button @click="show = false" class="text-slate-400 hover:text-slate-600 transition"><i class="fas fa-times"></i></button>
-        </div>
-        @endif
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'bottom-end',
+                showConfirmButton: false,
+                timer: 4000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
 
-        @if(session('error'))
-        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="opacity-0 -translate-y-4 scale-95"
-             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-             x-transition:leave="transition ease-in duration-200"
-             x-transition:leave-start="opacity-100 scale-100"
-             x-transition:leave-end="opacity-0 scale-95"
-             class="bg-white border-l-4 border-red-500 shadow-2xl rounded-xl p-4 flex items-start gap-3 pointer-events-auto">
-            <div class="bg-red-100 rounded-full p-1.5 flex-shrink-0 mt-0.5">
-                <i class="fas fa-exclamation text-red-600 text-sm px-1"></i>
-            </div>
-            <div class="flex-1">
-                <h4 class="text-sm font-bold text-slate-800">Oops! Terjadi Kesalahan</h4>
-                <p class="text-sm text-slate-600 mt-0.5">{{ session('error') }}</p>
-            </div>
-            <button @click="show = false" class="text-slate-400 hover:text-slate-600 transition"><i class="fas fa-times"></i></button>
-        </div>
-        @endif
+            @if(session('success'))
+                Toast.fire({
+                    icon: 'success',
+                    title: "{{ session('success') }}"
+                });
+            @endif
 
-        @if(session('info'))
-        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 6000)"
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="opacity-0 -translate-y-4 scale-95"
-             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-             x-transition:leave="transition ease-in duration-200"
-             x-transition:leave-start="opacity-100 scale-100"
-             x-transition:leave-end="opacity-0 scale-95"
-             class="bg-white border-l-4 border-blue-500 shadow-2xl rounded-xl p-4 flex items-start gap-3 pointer-events-auto">
-            <div class="bg-blue-100 rounded-full p-1.5 flex-shrink-0 mt-0.5">
-                <i class="fas fa-info-circle text-blue-600 text-sm"></i>
-            </div>
-            <div class="flex-1">
-                <h4 class="text-sm font-bold text-slate-800">Info</h4>
-                <p class="text-sm text-slate-600 mt-0.5">{{ session('info') }}</p>
-            </div>
-            <button @click="show = false" class="text-slate-400 hover:text-slate-600 transition"><i class="fas fa-times"></i></button>
-        </div>
-        @endif
-    </div>
+            @if(session('error'))
+                Toast.fire({
+                    icon: 'error',
+                    title: "{{ session('error') }}"
+                });
+            @endif
+
+            @if(session('info'))
+                Toast.fire({
+                    icon: 'info',
+                    title: "{{ session('info') }}"
+                });
+            @endif
+
+            @if($errors->any())
+                Toast.fire({
+                    icon: 'error',
+                    title: "{{ $errors->first() }}"
+                });
+            @endif
+
+            // Global confirmation handler for forms using data-confirm attribute
+            document.addEventListener('submit', function(e) {
+                const form = e.target;
+                if (form.dataset.confirmed) {
+                    return;
+                }
+                
+                const confirmMessage = form.getAttribute('data-confirm');
+                if (confirmMessage) {
+                    e.preventDefault();
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: confirmMessage,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#1d4ed8',
+                        cancelButtonColor: '#94a3b8',
+                        confirmButtonText: 'Yes, proceed',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.dataset.confirmed = 'true';
+                            form.submit();
+                        }
+                    });
+                }
+            });
+        });
+    </script>
 
     @if(session()->has('reschedule_booking_id'))
     <div class="bg-blue-600 text-white px-4 py-2 flex items-center justify-center gap-4 text-sm font-medium z-50">
-        <span>Anda sedang dalam mode Reschedule. Silakan pilih jadwal pengganti.</span>
+        <span>You are currently in Reschedule mode. Please choose a new schedule.</span>
         <form action="{{ route('booking.cancel-reschedule') }}" method="POST" class="inline">
             @csrf
-            <button type="submit" class="bg-white/20 hover:bg-white/30 px-3 py-1 rounded text-white text-xs font-bold transition">Batal Reschedule</button>
+            <button type="submit" class="bg-white/20 hover:bg-white/30 px-3 py-1 rounded text-white text-xs font-bold transition">Cancel Reschedule</button>
         </form>
     </div>
     @endif
 
-    @if(!request()->routeIs('login'))
-    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
+    @if(!request()->routeIs('login') && !request()->routeIs('register'))
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50" x-data="{ mobileMenuOpen: false }">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
                 
@@ -157,11 +171,11 @@
 
                                 @if(Auth::user()->role === 'admin')
                                     <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-primary-50 hover:text-primary-600 transition">
-                                        <i class="fas fa-tachometer-alt w-5 text-center"></i> Dashboard Admin
+                                        <i class="fas fa-tachometer-alt w-5 text-center"></i> Admin Dashboard
                                     </a>
                                 @endif
                                 <a href="{{ route('user.history') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-primary-50 hover:text-primary-600 transition">
-                                    <i class="fas fa-history w-5 text-center"></i> Riwayat Booking
+                                    <i class="fas fa-history w-5 text-center"></i> Booking History
                                 </a>
 
                                 <div class="h-px bg-slate-100 my-2"></div>
@@ -176,6 +190,70 @@
                         </div>
                     @endguest
                 </div>
+
+                <!-- Mobile menu button -->
+                <div class="flex items-center md:hidden">
+                    <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-slate-500 hover:text-primary-600 focus:outline-none p-2 rounded-lg transition-colors">
+                        <i class="fas text-xl" :class="mobileMenuOpen ? 'fa-times' : 'fa-bars'"></i>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div x-show="mobileMenuOpen" 
+             x-transition:enter="transition ease-out duration-150"
+             x-transition:enter-start="opacity-0 -translate-y-2"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-100"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 -translate-y-2"
+             class="absolute top-full left-0 right-0 bg-white border-b border-slate-200 shadow-xl md:hidden z-[60]" 
+             style="display: none;">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="{{ route('home') }}" class="block px-3 py-2 rounded-lg text-base font-bold {{ request()->routeIs('home') ? 'bg-primary-50 text-primary-600' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-850' }}">Home</a>
+                <a href="{{ route('fields.index') }}" class="block px-3 py-2 rounded-lg text-base font-bold {{ request()->routeIs('fields.*') ? 'bg-primary-50 text-primary-600' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-850' }}">Fields</a>
+                @auth
+                    <a href="{{ route('user.history') }}" class="block px-3 py-2 rounded-lg text-base font-bold {{ request()->routeIs('user.history') ? 'bg-primary-50 text-primary-600' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-850' }}">History</a>
+                @endauth
+                <a href="{{ route('about') }}" class="block px-3 py-2 rounded-lg text-base font-bold {{ request()->routeIs('about') ? 'bg-primary-50 text-primary-600' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-850' }}">About</a>
+                <a href="{{ route('contact') }}" class="block px-3 py-2 rounded-lg text-base font-bold {{ request()->routeIs('contact') ? 'bg-primary-50 text-primary-600' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-850' }}">Contact</a>
+            </div>
+            
+            <div class="pt-4 pb-3 border-t border-slate-100 px-4">
+                @guest
+                    <div class="grid grid-cols-2 gap-3">
+                        <a href="{{ route('login') }}" class="flex items-center justify-center border border-slate-200 text-slate-700 font-bold px-4 py-2 rounded-xl text-sm hover:bg-slate-50 transition">Sign In</a>
+                        <a href="{{ route('register') }}" class="flex items-center justify-center bg-primary-600 text-white font-bold px-4 py-2 rounded-xl text-sm hover:bg-primary-700 transition">Sign Up</a>
+                    </div>
+                @else
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-full border border-primary-100 overflow-hidden bg-slate-200 flex-shrink-0">
+                            <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->username) }}&background=1d4ed8&color=fff&bold=true" class="w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-slate-800">{{ Auth::user()->username }}</p>
+                            <p class="text-xs text-slate-500 capitalize">{{ Auth::user()->role }}</p>
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        @if(Auth::user()->role === 'admin')
+                            <a href="{{ route('admin.dashboard') }}" class="block px-3 py-2 rounded-lg text-base font-semibold text-slate-600 hover:bg-primary-50 hover:text-primary-600 transition">
+                                <i class="fas fa-tachometer-alt w-5"></i> Admin Dashboard
+                            </a>
+                        @endif
+                        <a href="{{ route('user.history') }}" class="block px-3 py-2 rounded-lg text-base font-semibold text-slate-600 hover:bg-primary-50 hover:text-primary-600 transition">
+                            <i class="fas fa-history w-5"></i> Booking History
+                        </a>
+                        <form method="POST" action="{{ route('logout') }}" class="block">
+                            @csrf
+                            <button type="submit" class="w-full text-left px-3 py-2 rounded-lg text-base font-semibold text-red-600 hover:bg-red-50 transition">
+                                <i class="fas fa-sign-out-alt w-5"></i> Sign Out
+                            </button>
+                        </form>
+                    </div>
+                @endguest
             </div>
         </div>
     </nav>
@@ -185,7 +263,7 @@
         @yield('content')
     </main>
 
-    @if(!request()->routeIs('login'))
+    @if(!request()->routeIs('login') && !request()->routeIs('register'))
     <footer class="bg-primary-900 text-slate-300 pt-12 pb-6">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
@@ -193,21 +271,21 @@
                     <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
                         <i class="fas fa-layer-group text-primary-500"></i> ActiveCourt
                     </h3>
-                    <p class="text-sm text-slate-400 max-w-md">Platform pemesanan lapangan olahraga terpercaya, mudah, dan cepat. Temukan lapangan terbaik untuk pertandinganmu hari ini.</p>
+                    <p class="text-sm text-slate-400 max-w-md">Trusted, easy, and fast sports court booking platform. Find the best court for your match today.</p>
                 </div>
                 <div>
-                    <h3 class="text-lg font-semibold text-white mb-4">Tautan Cepat</h3>
+                    <h3 class="text-lg font-semibold text-white mb-4">Quick Links</h3>
                     <ul class="space-y-2 text-sm font-medium">
-                        <li><a href="{{ route('home') }}" class="hover:text-white transition">Beranda</a></li>
-                        <li><a href="{{ route('fields.index') }}" class="hover:text-white transition">Daftar Lapangan</a></li>
-                        <li><a href="{{ route('about') }}" class="hover:text-white transition">Tentang Kami</a></li>
-                        <li><a href="{{ route('contact') }}" class="hover:text-white transition">Kontak</a></li>
-                        <li><a href="#" class="hover:text-white transition">Syarat & Ketentuan</a></li>
-                        <li><a href="#" class="hover:text-white transition">Kebijakan Privasi</a></li>
+                        <li><a href="{{ route('home') }}" class="hover:text-white transition">Home</a></li>
+                        <li><a href="{{ route('fields.index') }}" class="hover:text-white transition">Field List</a></li>
+                        <li><a href="{{ route('about') }}" class="hover:text-white transition">About Us</a></li>
+                        <li><a href="{{ route('contact') }}" class="hover:text-white transition">Contact</a></li>
+                        <li><a href="#" class="hover:text-white transition">Terms & Conditions</a></li>
+                        <li><a href="#" class="hover:text-white transition">Privacy Policy</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h3 class="text-lg font-semibold text-white mb-4">Hubungi Kami</h3>
+                    <h3 class="text-lg font-semibold text-white mb-4">Contact Us</h3>
                     <ul class="space-y-3 text-sm font-medium">
                         <li class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><i class="fas fa-envelope text-white"></i></div> support@activecourt.com</li>
                         <li class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><i class="fas fa-phone text-white"></i></div> +62 812 3456 7890</li>
