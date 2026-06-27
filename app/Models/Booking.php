@@ -30,6 +30,10 @@ class Booking extends Model
         'schedule_ids' => 'array',
     ];
 
+    protected $appends = [
+        'computed_status',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id', 'id_users');

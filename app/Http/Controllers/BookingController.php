@@ -359,4 +359,326 @@ class BookingController extends Controller
 
         return view('user.booking-detail', compact('booking'));
     }
+
+    public function apiHistory(Request $request)
+    {
+        // Auto expire booking pending > 30 menit
+        $expiredBookings = Booking::query()
+            ->with(['schedule.field', 'payment'])
+            ->where('status_bookings', 'Pending')
+            ->where('created_at', '<=', now()->subMinutes(30))
+            ->get();
+
+        foreach ($expiredBookings as $booking) {
+            $booking->update([
+                'status_bookings' => 'Cancelled',
+                'cancelled_at' => now(),
+                'cancel_reason' => 'Expired - payment exceeded 30 minutes'
+            ]);
+
+            if ($booking->payment) {
+                $booking->payment->update([
+                    'status_payments' => 'expired'
+                ]);
+            }
+            $this->freeSchedules($booking);
+        }
+
+        $tab = $request->query('tab', 'all');
+
+        $query = Booking::query()
+            ->with(['schedule.field', 'payment'])
+            ->where('user_id', Auth::id())
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $bookings = $query->map(function($booking) {
+            $computed = $booking->computed_status;
+            
+            if ($computed === 'Waiting for Payment') $booking->custom_status = 'waiting';
+            elseif ($computed === 'Rescheduled') $booking->custom_status = 'reschedule';
+            elseif ($computed === 'Canceled') $booking->custom_status = 'canceled';
+            elseif ($computed === 'Done') $booking->custom_status = 'done';
+            elseif ($computed === 'Paid') $booking->custom_status = 'paid';
+            else $booking->custom_status = 'unknown';
+
+            return $booking;
+        });
+
+        if ($tab !== 'all') {
+            $bookings = $bookings->filter(fn($b) => $b->custom_status === $tab)->values();
+        }
+
+        return response()->json([
+            'success' => true,
+            'bookings' => $bookings,
+            'tab' => $tab
+        ]);
+    }
+
+    public function apiStore(Request $request)
+    {
+        $request->validate([
+            'schedule_ids' => 'required|array|min:1',
+            'schedule_ids.*' => 'exists:schedules,id_schedules',
+            'play_date' => 'required|date|after_or_equal:today',
+            'subcourt_name' => 'required|string',
+            'reschedule_booking_id' => 'nullable|integer',
+        ]);
+
+        $schedules = Schedule::query()
+            ->with('field')
+            ->whereIn('id_schedules', $request->schedule_ids)
+            ->orderBy('start_time')
+            ->get();
+
+        if ($schedules->isEmpty()) {
+            return response()->json(['success' => false, 'message' => 'Schedule not found.'], 404);
+        }
+
+        $totalPrice = 0;
+        $firstFieldId = $schedules->first()->field->id_fields;
+
+        foreach ($schedules as $schedule) {
+            $status = strtolower(trim($schedule->status_schedules));
+            
+            if (!in_array($status, ['tersedia', 'available', '0'])) {
+                return response()->json(['success' => false, 'message' => 'Sorry, one of the schedules you selected was just booked by someone else.'], 422);
+            }
+
+            if ($schedule->field->id_fields !== $firstFieldId) {
+                return response()->json(['success' => false, 'message' => 'All schedules must be from the same field.'], 422);
+            }
+
+            $totalPrice += $schedule->field->price_per_hour;
+        }
+
+        $firstSchedule = $schedules->first();
+        $rescheduleId = $request->reschedule_booking_id;
+
+        if ($rescheduleId) {
+            $oldBooking = Booking::findOrFail($rescheduleId);
+            
+            if ($totalPrice > $oldBooking->total_price) {
+                return response()->json(['success' => false, 'message' => 'The duration of the new schedule exceeds your reschedule limit.'], 422);
+            }
+
+            $bookingCode = '#AC-RES-' . strtoupper(Str::random(4));
+            $booking = Booking::create([
+                'user_id' => Auth::id(),
+                'schedule_id' => $firstSchedule->id_schedules,
+                'schedule_ids' => $request->schedule_ids,
+                'subcourt_name' => $request->subcourt_name,
+                'booking_code' => $bookingCode,
+                'total_price' => $totalPrice,
+                'status_bookings' => 'Paid',
+                'play_date' => $request->play_date,
+            ]);
+
+            Schedule::whereIn('id_schedules', $request->schedule_ids)
+                ->update(['status_schedules' => 'Booked']);
+
+            if ($oldBooking->payment) {
+                $newPayment = $oldBooking->payment->replicate();
+                $newPayment->booking_id = $booking->id_bookings;
+                $newPayment->midtrans_order_id = $bookingCode . '-' . time();
+                $newPayment->save();
+            }
+
+            $oldBooking->update([
+                'status_bookings' => 'Cancelled',
+                'cancel_reason' => 'Rescheduled'
+            ]);
+            $this->freeSchedules($oldBooking);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Schedule rescheduled successfully!',
+                'booking' => $booking
+            ]);
+        }
+
+        $bookingCode = '#AC-' . strtoupper(Str::random(6));
+
+        $booking = Booking::query()->create([
+            'user_id' => Auth::id(),
+            'schedule_id' => $firstSchedule->id_schedules,
+            'schedule_ids' => $request->schedule_ids,
+            'subcourt_name' => $request->subcourt_name,
+            'booking_code' => $bookingCode,
+            'total_price' => $totalPrice,
+            'status_bookings' => 'Pending',
+            'play_date' => $request->play_date,
+        ]);
+
+        Schedule::query()
+            ->whereIn('id_schedules', $request->schedule_ids)
+            ->update(['status_schedules' => 'Booked']);
+
+        \Midtrans\Config::$serverKey = config('midtrans.server_key');
+        \Midtrans\Config::$isProduction = config('midtrans.is_production');
+        \Midtrans\Config::$isSanitized = config('midtrans.is_sanitized');
+        \Midtrans\Config::$is3ds = config('midtrans.is_3ds');
+
+        $midtransOrderId = $bookingCode . '-' . time();
+
+        $params = array(
+            'transaction_details' => array(
+                'order_id' => $midtransOrderId,
+                'gross_amount' => $totalPrice,
+            ),
+            'customer_details' => array(
+                'first_name' => Auth::user()->name_users,
+                'email' => Auth::user()->email,
+            ),
+        );
+
+        $snapToken = \Midtrans\Snap::getSnapToken($params);
+
+        $payment = Payment::query()->create([
+            'booking_id' => $booking->id_bookings,
+            'midtrans_order_id' => $midtransOrderId,
+            'amount' => $totalPrice,
+            'status_payments' => 'pending',
+            'snap_token' => $snapToken,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Booking created successfully!',
+            'booking' => $booking,
+            'snapToken' => $snapToken
+        ]);
+    }
+
+    public function apiCancel(Request $request, $id)
+    {
+        $booking = Booking::query()
+                          ->with('schedule.field')
+                          ->where('id_bookings', $id)
+                          ->where('user_id', Auth::id())
+                          ->firstOrFail();
+
+        $request->validate([
+            'cancel_reason' => 'required|string|max:255'
+        ]);
+
+        if ($booking->status_bookings === 'Cancelled') {
+            return response()->json(['success' => false, 'message' => 'This booking has already been cancelled.'], 422);
+        }
+
+        try {
+            $this->freeSchedules($booking);
+        } catch (\Exception $e) {
+            Log::error('Cancel freeSchedules error: ' . $e->getMessage());
+        }
+
+        if ($booking->status_bookings === 'Pending') {
+            $booking->update([
+                'status_bookings' => 'Cancelled',
+                'cancelled_at' => now(),
+                'cancel_reason' => $request->cancel_reason
+            ]);
+            return response()->json(['success' => true, 'message' => 'Booking has been canceled.', 'booking' => $booking]);
+        }
+
+        if ($booking->status_bookings === 'Paid') {
+            $playDate = Carbon::parse($booking->play_date);
+            $today = Carbon::now();
+            $daysDifference = $today->diffInDays($playDate, false);
+
+            if ($daysDifference < 3) {
+                return response()->json(['success' => false, 'message' => 'Cancellation failed. Paid bookings can only be cancelled at least 3 days (H-3) before the play date.'], 422);
+            }
+
+            $booking->update([
+                'status_bookings' => 'Cancelled',
+                'cancelled_at' => now(),
+                'cancel_reason' => $request->cancel_reason
+            ]);
+            return response()->json(['success' => true, 'message' => 'Booking has been canceled and your money is refunded.', 'booking' => $booking]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Booking cannot be cancelled.'], 422);
+    }
+
+    public function apiReschedule(Request $request, $id)
+    {
+        $booking = Booking::query()
+                          ->with('schedule.field')
+                          ->where('id_bookings', $id)
+                          ->where('user_id', Auth::id())
+                          ->firstOrFail();
+
+        if ($booking->status_bookings !== 'Paid') {
+            return response()->json(['success' => false, 'message' => 'Only paid bookings can be rescheduled.'], 422);
+        }
+
+        $playDate = Carbon::parse($booking->play_date);
+        $today = Carbon::now();
+        $daysDifference = $today->diffInDays($playDate, false);
+
+        if ($daysDifference < 3 && !Carbon::parse($booking->play_date)->isPast()) {
+            return response()->json(['success' => false, 'message' => 'Reschedule failed. Can only be done at least 3 days (H-3) before the play date.'], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Eligible for reschedule',
+            'booking' => $booking
+        ]);
+    }
+
+    public function apiCheckout(Request $request, $id)
+    {
+        $booking = Booking::query()
+            ->with(['schedule.field', 'payment'])
+            ->where('id_bookings', $id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        $snapToken = $booking->payment?->snap_token;
+
+        if (!$snapToken) {
+            return response()->json(['success' => false, 'message' => 'Payment token not found.'], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'booking' => $booking,
+            'snapToken' => $snapToken
+        ]);
+    }
+
+    public function apiShowDetail(Request $request, $id)
+    {
+        $booking = Booking::with([
+            'schedule.field',
+            'payment',
+            'user'
+        ])->where('user_id', Auth::id())->findOrFail($id);
+
+        return response()->json([
+            'success' => true,
+            'booking' => $booking
+        ]);
+    }
+
+    public function apiInvoice(Request $request, $id)
+    {
+        $booking = Booking::query()
+            ->with(['schedule.field', 'payment', 'user'])
+            ->where('id_bookings', $id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        if ($booking->status_bookings !== 'Paid') {
+            return response()->json(['success' => false, 'message' => 'Invoice is only available for paid bookings.'], 400);
+        }
+
+        return response()->json([
+            'success' => true,
+            'booking' => $booking
+        ]);
+    }
 }

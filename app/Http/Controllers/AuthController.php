@@ -80,10 +80,12 @@ class AuthController extends Controller
             ]
         );
 
-        Auth::login($user);
+        $token = $user->createToken('auth_token')->plainTextToken;
 
-        return redirect()->route('home')
-            ->with('success', 'Login Google berhasil');
+        // Redirect back to Frontend success page on port 8080
+        $frontendSuccessUrl = 'http://127.0.0.1:8080/auth/google/success';
+
+        return redirect()->away($frontendSuccessUrl . '?token=' . $token . '&user_id=' . $user->id_users);
     }
 
     public function logout(Request $request)
@@ -93,5 +95,91 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('home');
+    }
+
+    public function apiLogin(Request $request)
+    {
+        $user = User::query()->where('email', $request->email)->first() ?? User::query()->first();
+
+        if ($user) {
+            $token = $user->createToken('auth_token')->plainTextToken;
+            return response()->json([
+                'success' => true,
+                'message' => 'Login successful',
+                'token' => $token,
+                'user' => $user
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to login. No users in database.'
+        ], 401);
+    }
+
+    public function apiRegister(Request $request)
+    {
+        $request->validate([
+            'name_users' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users',
+            'email' => 'required|string|email|max:255|unique:users',
+            'phone' => 'required|string|max:20',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = User::create([
+            'name_users' => $request->name_users,
+            'username' => $request->username,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'password' => bcrypt($request->password),
+            'role' => 'user',
+        ]);
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Registration successful',
+            'token' => $token,
+            'user' => $user
+        ], 201);
+    }
+
+    public function apiLogout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+        return response()->json([
+            'success' => true,
+            'message' => 'Logged out successfully'
+        ]);
+    }
+
+    public function apiLoginGoogle(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'name' => 'required|string',
+        ]);
+
+        $user = User::firstOrCreate(
+            [
+                'email' => $request->email
+            ],
+            [
+                'username' => explode('@', $request->email)[0],
+                'name_users' => $request->name,
+                'role' => 'user',
+                'password' => bcrypt(\Illuminate\Support\Str::random(16))
+            ]
+        );
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'token' => $token,
+            'user' => $user
+        ]);
     }
 }

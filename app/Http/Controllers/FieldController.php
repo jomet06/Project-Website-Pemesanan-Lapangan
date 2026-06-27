@@ -54,4 +54,55 @@ class FieldController extends Controller
         
         return view('fields.show', compact('field'));
     }
+
+    public function apiIndex(Request $request)
+    {
+        $query = Field::with('facilities');
+
+        if ($location = $request->location) {
+            $query->where(function ($q) use ($location) {
+                $q->where('address', 'like', '%' . $location . '%')
+                  ->orWhere('description', 'like', '%' . $location . '%');
+            });
+        }
+
+        if ($sports = $request->sports) {
+            $query->whereIn('type_fields', (array) $sports);
+        }
+
+        if ($maxPrice = $request->max_price) {
+            $query->where('price_per_hour', '<=', (int) $maxPrice);
+        }
+
+        if ($sort = $request->sort) {
+            if ($sort === 'lowest_price' || $sort === 'Harga Terendah') {
+                $query->orderBy('price_per_hour', 'asc');
+            } elseif ($sort === 'highest_price' || $sort === 'Harga Tertinggi') {
+                $query->orderBy('price_per_hour', 'desc');
+            } elseif ($sort === 'popular' || $sort === 'Terpopuler') {
+                $query->withCount('schedules')->orderBy('schedules_count', 'desc');
+            } elseif ($sort === 'newest' || $sort === 'Terbaru') {
+                $query->latest();
+            } else {
+                $query->latest();
+            }
+        } else {
+            $query->latest();
+        }
+
+        $fields = $query->get();
+        return response()->json($fields);
+    }
+
+    public function apiShow($id)
+    {
+        $field = Field::with(['facilities', 'schedules' => function ($query) {
+            $query->orderBy('start_time', 'asc');
+        }])->find($id);
+        
+        if (!$field) {
+            return response()->json(['message' => 'Field not found'], 404);
+        }
+        return response()->json($field);
+    }
 }
