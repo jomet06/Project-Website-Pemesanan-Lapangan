@@ -84,7 +84,7 @@ class AuthController extends Controller
         $token = $user->createToken('auth_token')->plainTextToken;
 
         // Redirect back to Frontend success page on port 8000
-        $frontendSuccessUrl = 'http://127.0.0.1:8000/auth/google/success';
+        $frontendSuccessUrl = 'http://localhost:8000/auth/google/success';
 
         return redirect()->away($frontendSuccessUrl . '?token=' . $token . '&user_id=' . $user->id_users);
     }

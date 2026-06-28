@@ -92,10 +92,24 @@ class BookingController extends Controller
         $totalPrice = 0;
         $firstFieldId = $schedules->first()->field->id_fields;
 
+        $existingBookings = Booking::where('subcourt_name', $request->subcourt_name)
+            ->where('play_date', $request->play_date)
+            ->whereIn('status_bookings', ['Pending', 'Paid', 'Done'])
+            ->get();
+
         foreach ($schedules as $schedule) {
-            $status = strtolower(trim($schedule->status_schedules));
-            
-            if (!in_array($status, ['tersedia', 'available', '0'])) {
+            if (strtolower(trim($schedule->status_schedules)) === 'locked') {
+                return back()->with('error', 'Sorry, this schedule slot is locked.');
+            }
+            $isBooked = false;
+            foreach ($existingBookings as $b) {
+                $ids = $b->schedule_ids ?? [];
+                if (in_array((string)$schedule->id_schedules, array_map('strval', $ids))) {
+                    $isBooked = true;
+                    break;
+                }
+            }
+            if ($isBooked) {
                 return back()->with('error', 'Sorry, one of the schedules you selected was just booked by someone else.');
             }
 
@@ -129,8 +143,7 @@ class BookingController extends Controller
                 'play_date' => $request->play_date,
             ]);
 
-            Schedule::whereIn('id_schedules', $request->schedule_ids)
-                ->update(['status_schedules' => 'Booked']);
+
 
             if ($oldBooking->payment) {
                 $newPayment = $oldBooking->payment->replicate();
@@ -162,10 +175,7 @@ class BookingController extends Controller
             'play_date' => $request->play_date,
         ]);
 
-        // Menggunakan status 'Booked' agar sesuai dengan standar ENUM umumnya
-        Schedule::query()
-            ->whereIn('id_schedules', $request->schedule_ids)
-            ->update(['status_schedules' => 'Booked']);
+
 
         \Midtrans\Config::$serverKey = config('midtrans.server_key');
         \Midtrans\Config::$isProduction = config('midtrans.is_production');
@@ -283,38 +293,7 @@ class BookingController extends Controller
      */
     private function freeSchedules($booking)
     {
-        $scheduleIdsToFree = $booking->schedule_ids;
-
-        if (!empty($scheduleIdsToFree) && is_array($scheduleIdsToFree)) {
-            Schedule::query()
-                ->whereIn('id_schedules', $scheduleIdsToFree)
-                ->update(['status_schedules' => 'Available']);
-            return;
-        }
-
-        $schedule = $booking->schedule;
-        if (!$schedule || !$schedule->field) {
-            return;
-        }
-
-        $pricePerHour = $schedule->field->price_per_hour;
-        $duration = ($pricePerHour <= 0) ? 1 : round($booking->total_price / $pricePerHour);
-
-        $schedulesToFree = Schedule::query()
-            ->where('field_id', $schedule->field_id)
-            ->where('date', $booking->play_date)
-            ->where('start_time', '>=', $schedule->start_time)
-            ->orderBy('start_time')
-            ->limit($duration)
-            ->pluck('id_schedules');
-
-        if ($schedulesToFree->isEmpty()) {
-            return;
-        }
-
-        Schedule::query()
-            ->whereIn('id_schedules', $schedulesToFree)
-            ->update(['status_schedules' => 'Available']);
+        // No longer needed because availability is calculated dynamically from bookings
     }
 
     public function invoice($id)
@@ -439,10 +418,24 @@ class BookingController extends Controller
         $totalPrice = 0;
         $firstFieldId = $schedules->first()->field->id_fields;
 
+        $existingBookings = Booking::where('subcourt_name', $request->subcourt_name)
+            ->where('play_date', $request->play_date)
+            ->whereIn('status_bookings', ['Pending', 'Paid', 'Done'])
+            ->get();
+
         foreach ($schedules as $schedule) {
-            $status = strtolower(trim($schedule->status_schedules));
-            
-            if (!in_array($status, ['tersedia', 'available', '0'])) {
+            if (strtolower(trim($schedule->status_schedules)) === 'locked') {
+                return response()->json(['success' => false, 'message' => 'Sorry, this schedule slot is locked.'], 422);
+            }
+            $isBooked = false;
+            foreach ($existingBookings as $b) {
+                $ids = $b->schedule_ids ?? [];
+                if (in_array((string)$schedule->id_schedules, array_map('strval', $ids))) {
+                    $isBooked = true;
+                    break;
+                }
+            }
+            if ($isBooked) {
                 return response()->json(['success' => false, 'message' => 'Sorry, one of the schedules you selected was just booked by someone else.'], 422);
             }
 
@@ -475,8 +468,7 @@ class BookingController extends Controller
                 'play_date' => $request->play_date,
             ]);
 
-            Schedule::whereIn('id_schedules', $request->schedule_ids)
-                ->update(['status_schedules' => 'Booked']);
+
 
             if ($oldBooking->payment) {
                 $newPayment = $oldBooking->payment->replicate();
@@ -511,9 +503,7 @@ class BookingController extends Controller
             'play_date' => $request->play_date,
         ]);
 
-        Schedule::query()
-            ->whereIn('id_schedules', $request->schedule_ids)
-            ->update(['status_schedules' => 'Booked']);
+
 
         \Midtrans\Config::$serverKey = config('midtrans.server_key');
         \Midtrans\Config::$isProduction = config('midtrans.is_production');

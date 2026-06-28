@@ -26,8 +26,8 @@ class Schedule extends Model
         return $this->belongsTo(Field::class, 'field_id', 'id_fields');
     }
 
-    public function booking()
+    public function bookings()
     {
-        return $this->hasOne(Booking::class, 'schedule_id', 'id_schedules');
+        return $this->hasMany(Booking::class, 'schedule_id', 'id_schedules');
     }
 }

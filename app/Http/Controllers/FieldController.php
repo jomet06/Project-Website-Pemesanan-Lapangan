@@ -119,6 +119,24 @@ class FieldController extends Controller
         if (!$field) {
             return response()->json(['message' => 'Field not found'], 404);
         }
+
+        // Get all active bookings for this field
+        $activeBookings = \App\Models\Booking::whereIn('status_bookings', ['Pending', 'Paid', 'Done'])
+            ->where('play_date', '>=', now()->toDateString())
+            ->get();
+
+        foreach ($field->schedules as $schedule) {
+            $scheduleBookings = $activeBookings->filter(function($booking) use ($schedule) {
+                $ids = $booking->schedule_ids ?? [];
+                if (is_string($ids)) {
+                    $ids = json_decode($ids, true);
+                }
+                return in_array((string)$schedule->id_schedules, array_map('strval', $ids));
+            })->values();
+            
+            $schedule->bookings = $scheduleBookings;
+        }
+
         return response()->json($field);
     }
 }
