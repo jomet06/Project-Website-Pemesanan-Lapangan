@@ -579,6 +579,7 @@ class AdminController extends Controller
 
     public function apiUpdateField(Request $request, $id)
     {
+        \Illuminate\Support\Facades\Log::info('apiUpdateField Request Files:', ['has_image' => $request->hasFile('image'), 'all_files' => array_keys($request->allFiles())]);
         $field = Field::query()->findOrFail($id);
 
         $request->validate([
