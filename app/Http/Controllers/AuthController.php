@@ -12,12 +12,13 @@ class AuthController extends Controller
 {
     public function loginSubmit(Request $request)
     {
-        // Prototype: Cari user berdasarkan email yang diketik,
-        // Jika tidak ketemu, login otomatis pakai User pertama (UserSeeder)
-        $user = User::query()->where('email', $request->email)->first() ?? User::query()->first();
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
 
-        if ($user) {
-            Auth::login($user); // Memasukkan sesi pengguna ke sistem Laravel
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+            $user = Auth::user();
             
             // Redirect sesuai role
             if ($user->role === 'admin') {
@@ -27,7 +28,7 @@ class AuthController extends Controller
             return redirect()->route('home')->with('success', 'Selamat datang kembali, ' . $user->username . '!');
         }
 
-        return redirect()->route('home')->with('error', 'Gagal login. Belum ada data user di database (Jalankan seeder).');
+        return redirect()->route('login')->with('error', 'email atau password salah');
     }
 
     public function registerSubmit(Request $request)
@@ -82,8 +83,8 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        // Redirect back to Frontend success page on port 8080
-        $frontendSuccessUrl = 'http://127.0.0.1:8080/auth/google/success';
+        // Redirect back to Frontend success page on port 8000
+        $frontendSuccessUrl = 'http://127.0.0.1:8000/auth/google/success';
 
         return redirect()->away($frontendSuccessUrl . '?token=' . $token . '&user_id=' . $user->id_users);
     }
@@ -99,22 +100,22 @@ class AuthController extends Controller
 
     public function apiLogin(Request $request)
     {
-        $user = User::query()->where('email', $request->email)->first() ?? User::query()->first();
+        $user = User::query()->where('email', $request->email)->first();
 
-        if ($user) {
-            $token = $user->createToken('auth_token')->plainTextToken;
+        if (!$user || !\Illuminate\Support\Facades\Hash::check($request->password, $user->password)) {
             return response()->json([
-                'success' => true,
-                'message' => 'Login successful',
-                'token' => $token,
-                'user' => $user
-            ]);
+                'success' => false,
+                'message' => 'email atau password salah'
+            ], 401);
         }
 
+        $token = $user->createToken('auth_token')->plainTextToken;
         return response()->json([
-            'success' => false,
-            'message' => 'Failed to login. No users in database.'
-        ], 401);
+            'success' => true,
+            'message' => 'Login successful',
+            'token' => $token,
+            'user' => $user
+        ]);
     }
 
     public function apiRegister(Request $request)

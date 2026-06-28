@@ -18,6 +18,14 @@ class FieldController extends Controller
             });
         }
 
+        if ($search = $request->search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name_fields', 'like', '%' . $search . '%')
+                  ->orWhere('address', 'like', '%' . $search . '%')
+                  ->orWhere('description', 'like', '%' . $search . '%');
+            });
+        }
+
         if ($sports = $request->sports) {
             $query->whereIn('type_fields', (array) $sports);
         }
@@ -63,6 +71,14 @@ class FieldController extends Controller
             $query->where(function ($q) use ($location) {
                 $q->where('address', 'like', '%' . $location . '%')
                   ->orWhere('description', 'like', '%' . $location . '%');
+            });
+        }
+
+        if ($search = $request->search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name_fields', 'like', '%' . $search . '%')
+                  ->orWhere('address', 'like', '%' . $search . '%')
+                  ->orWhere('description', 'like', '%' . $search . '%');
             });
         }
 
