@@ -699,10 +699,11 @@ class AdminController extends Controller
         $user = User::query()->findOrFail($id);
         $request->validate([
             'name_users' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users,username,' . $id . ',id_users',
             'email' => 'required|string|email|max:255|unique:users,email,' . $id . ',id_users',
             'role' => 'required|string|in:user,admin',
         ]);
-        $user->update($request->only('name_users', 'email', 'role'));
+        $user->update($request->only('name_users', 'username', 'email', 'role'));
         return response()->json(['success' => true, 'message' => 'User updated successfully.', 'user' => $user]);
     }
 

@@ -30,4 +30,9 @@ class Schedule extends Model
     {
         return $this->hasMany(Booking::class, 'schedule_id', 'id_schedules');
     }
+
+    public function booking()
+    {
+        return $this->hasOne(Booking::class, 'schedule_id', 'id_schedules')->latestOfMany();
+    }
 }

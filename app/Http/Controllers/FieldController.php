@@ -27,7 +27,23 @@ class FieldController extends Controller
         }
 
         if ($sports = $request->sports) {
-            $query->whereIn('type_fields', (array) $sports);
+            $sportsList = (array) $sports;
+            $aliases = [];
+            foreach ($sportsList as $sport) {
+                $aliases[] = $sport;
+                $low = strtolower($sport);
+                if ($low === 'basketball' || $low === 'basket') {
+                    $aliases[] = 'Basket';
+                    $aliases[] = 'Basketball';
+                } elseif ($low === 'volleyball' || $low === 'voli') {
+                    $aliases[] = 'Voli';
+                    $aliases[] = 'Volleyball';
+                } elseif ($low === 'tennis' || $low === 'tenis') {
+                    $aliases[] = 'Tenis';
+                    $aliases[] = 'Tennis';
+                }
+            }
+            $query->whereIn('type_fields', array_unique($aliases));
         }
 
         if ($maxPrice = $request->max_price) {
@@ -83,7 +99,23 @@ class FieldController extends Controller
         }
 
         if ($sports = $request->sports) {
-            $query->whereIn('type_fields', (array) $sports);
+            $sportsList = (array) $sports;
+            $aliases = [];
+            foreach ($sportsList as $sport) {
+                $aliases[] = $sport;
+                $low = strtolower($sport);
+                if ($low === 'basketball' || $low === 'basket') {
+                    $aliases[] = 'Basket';
+                    $aliases[] = 'Basketball';
+                } elseif ($low === 'volleyball' || $low === 'voli') {
+                    $aliases[] = 'Voli';
+                    $aliases[] = 'Volleyball';
+                } elseif ($low === 'tennis' || $low === 'tenis') {
+                    $aliases[] = 'Tenis';
+                    $aliases[] = 'Tennis';
+                }
+            }
+            $query->whereIn('type_fields', array_unique($aliases));
         }
 
         if ($maxPrice = $request->max_price) {
