@@ -292,7 +292,7 @@ class AdminController extends Controller
         return view('admin.users', [
             'users' => $users,
             'totalUsers' => $users->count(),
-            'activeNow' => User::query()->where('created_at', '>=', now()->subDays(7))->count(),
+            'activeNow' => User::query()->whereNull('banned_at')->count(),
             'banned' => User::query()->whereNotNull('banned_at')->count(),
         ]);
     }
@@ -683,7 +683,7 @@ class AdminController extends Controller
         return response()->json([
             'users' => $users,
             'totalUsers' => User::query()->count(),
-            'activeNow' => User::query()->where('created_at', '>=', now()->subDays(7))->count(),
+            'activeNow' => User::query()->whereNull('banned_at')->count(),
             'banned' => User::query()->whereNotNull('banned_at')->count(),
         ]);
     }
@@ -698,11 +698,16 @@ class AdminController extends Controller
     {
         $user = User::query()->findOrFail($id);
         $request->validate([
-            'name_users' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users,username,' . $id . ',id_users',
             'email' => 'required|string|email|max:255|unique:users,email,' . $id . ',id_users',
             'role' => 'required|string|in:user,admin',
         ]);
-        $user->update($request->only('name_users', 'email', 'role'));
+        $user->update([
+            'username' => $request->username,
+            'name_users' => $request->name_users ?? $request->username,
+            'email' => $request->email,
+            'role' => $request->role,
+        ]);
         return response()->json(['success' => true, 'message' => 'User updated successfully.', 'user' => $user]);
     }
 

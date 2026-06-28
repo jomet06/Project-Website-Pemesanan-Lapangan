@@ -27,7 +27,13 @@ class FieldController extends Controller
         }
 
         if ($sports = $request->sports) {
-            $query->whereIn('type_fields', (array) $sports);
+            $sportsMapped = array_map(function($sport) {
+                if ($sport === 'Basket') return 'Basketball';
+                if ($sport === 'Voli') return 'Volleyball';
+                if ($sport === 'Tenis') return 'Tennis';
+                return $sport;
+            }, (array) $sports);
+            $query->whereIn('type_fields', $sportsMapped);
         }
 
         if ($maxPrice = $request->max_price) {
@@ -83,7 +89,13 @@ class FieldController extends Controller
         }
 
         if ($sports = $request->sports) {
-            $query->whereIn('type_fields', (array) $sports);
+            $sportsMapped = array_map(function($sport) {
+                if ($sport === 'Basket') return 'Basketball';
+                if ($sport === 'Voli') return 'Volleyball';
+                if ($sport === 'Tenis') return 'Tennis';
+                return $sport;
+            }, (array) $sports);
+            $query->whereIn('type_fields', $sportsMapped);
         }
 
         if ($maxPrice = $request->max_price) {
